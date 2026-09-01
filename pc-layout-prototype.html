@@ -38,6 +38,7 @@ body{min-height:100vh;overflow:auto}
   gap:8px;
   width:max-content;
   max-width:calc(100vw - 48px);
+  align-items:stretch;
 }
 .brand{
   position:absolute;
@@ -51,7 +52,8 @@ body{min-height:100vh;overflow:auto}
 }
 .rail,.center{min-width:0}
 .rail{
-  min-height:100%;
+  height:100%;
+  min-height:0;
   display:flex;
   flex-direction:column;
   gap:7px;
@@ -79,7 +81,7 @@ body{min-height:100vh;overflow:auto}
 .dot{position:absolute;left:7px;bottom:8px;width:14px;height:14px;border-radius:4px;background:var(--plant);box-shadow:0 0 0 1px rgba(255,255,255,.08) inset}
 .dot.herb{background:var(--herb);border-radius:50%}
 .dot.carn{background:var(--carn);clip-path:polygon(50% 0,100% 100%,0 100%)}
-.graph-card{margin-top:1px;padding:8px 7px 7px;min-height:220px;display:flex;flex-direction:column}
+.graph-card{margin-top:1px;padding:8px 7px 7px;min-height:0;display:flex;flex:1;flex-direction:column}
 .graph-head{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:7px}
 .graph-head strong{font-size:8px;white-space:nowrap}.graph-head span{color:var(--muted);font-size:7px;white-space:nowrap}
 .graph{
@@ -131,12 +133,13 @@ button{height:29px;border:1px solid var(--line2);border-radius:7px;background:#1
 .meter{position:relative;width:7px;flex:1;margin:4px 0;border:1px solid #37506a;border-radius:999px;background:#0d1b29;overflow:hidden}
 .meter::after{content:"";position:absolute;left:0;right:0;bottom:0;height:44%;background:#5ab78e}
 .time{height:27px;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;color:#93a9bb;font-size:8.5px;font-variant-numeric:tabular-nums}
-.ability-card{padding:8px 8px 7px;min-height:138px}
-.section-title{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:7px}
+.ability-card{padding:7px 7px 6px;min-height:0;flex:0 0 auto}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:5px}
 .section-title strong{font-size:9px}.section-title span{font-size:7px;color:var(--muted)}
-.ability{padding:5px 6px;border:1px solid #6b5c2f;border-radius:6px;background:#4f451e;color:#f3dda0;font-size:7px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ability{height:15px;line-height:9px;padding:2px 5px;border:1px solid #6b5c2f;border-radius:5px;background:#4f451e;color:#f3dda0;font-size:7px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ability:last-child{margin-bottom:0}
 .ability.normal{border-color:#36516a;background:#132334;color:#d9e6f0}
-.spacer{flex:1;min-height:20px}
+.spacer{flex:1;min-height:7px}
 .hp-card{padding:8px 8px}
 .hp-label{color:var(--muted);font-size:7px;margin-bottom:5px}.hp-row{display:flex;align-items:center;gap:6px}.avatar{width:20px;height:20px;border-radius:50%;background:var(--herb);flex:0 0 auto}
 .hp-main{flex:1;min-width:0}.hp-main strong{display:block;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hp-bar{height:5px;margin-top:4px;border-radius:999px;background:#213448;overflow:hidden}.hp-bar::after{content:"";display:block;width:68%;height:100%;background:#78c39a}
@@ -194,10 +197,19 @@ button{height:29px;border:1px solid var(--line2);border-radius:7px;background:#1
 
     <aside class="rail right">
       <section class="ability-card">
-        <div class="section-title"><strong>取得能力</strong><span>6</span></div>
+        <div class="section-title"><strong>取得能力</strong><span>12</span></div>
         <div class="ability">植物周期短縮</div>
         <div class="ability normal">草食摂食回復 +2　1/3</div>
         <div class="ability normal">繁殖得点 +15%　1/3</div>
+        <div class="ability normal">植物摂食得点 +15%　1/3</div>
+        <div class="ability normal">草食子HP +30　1/3</div>
+        <div class="ability normal">生存得点 +15%　1/3</div>
+        <div class="ability">危険察知</div>
+        <div class="ability normal">肉食捕食回復 +10　1/3</div>
+        <div class="ability normal">肉食子HP +45　1/3</div>
+        <div class="ability normal">肉食得点 +10%　1/3</div>
+        <div class="ability normal">繁殖得点 +15%　2/3</div>
+        <div class="ability normal">活動植物 -1　1/3</div>
       </section>
 
       <div class="spacer"></div>
