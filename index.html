@@ -2,11 +2,63 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow,noarchive">
-<meta http-equiv="refresh" content="0; url=./preview.html">
 <title>EcologicaLite</title>
-<script>location.replace('./preview.html?v='+Date.now());</script>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#081018}
+#app{display:block;width:100%;height:100%;border:0;background:#081018}
+</style>
 </head>
-<body style="margin:0;background:#081018;color:#e9f1f8;font-family:system-ui,-apple-system,sans-serif;display:grid;place-items:center;min-height:100vh">EcologicaLite を読み込み中…</body>
+<body>
+<iframe id="app" title="EcologicaLite" src="./preview.html"></iframe>
+<script>
+(()=>{
+  const frame=document.getElementById('app');
+  let installedDoc=null;
+  function install(){
+    let d;
+    try{d=frame.contentDocument;}catch(_){return;}
+    if(!d||!d.head||!d.body||!d.querySelector('.board-shell'))return;
+    if(installedDoc===d&&d.getElementById('root-v8-fixes'))return;
+    installedDoc=d;
+
+    const style=d.createElement('style');
+    style.id='root-v8-fixes';
+    style.textContent=`
+      .ability-set:nth-child(2) .set-ability:not(.empty){background:#17363a!important;border-color:#4f8f8a!important;color:#b9eee4!important}
+      .board-shell{position:relative!important}
+      .legacy-result-panel.result-overlay-panel{position:absolute!important;inset:8px!important;z-index:80!important;display:flex!important;align-items:center!important;justify-content:center!important;margin:0!important;padding:8px!important;border:0!important;border-radius:12px!important;background:rgba(3,8,13,.42)!important;backdrop-filter:blur(1.6px);-webkit-backdrop-filter:blur(1.6px)}
+      .legacy-result-panel.result-overlay-panel[hidden]{display:none!important}
+      .legacy-result-panel.result-overlay-panel .result-card{width:min(100%,420px);max-height:100%;overflow:auto;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(13,22,32,.96);box-shadow:0 16px 40px rgba(0,0,0,.35)}
+      .legacy-result-panel.result-overlay-panel h2{margin:0 0 7px;font-size:17px;line-height:1.25}
+      .legacy-result-panel.result-overlay-panel .result-score strong{font-size:30px}
+      @media(max-width:390px){.legacy-result-panel.result-overlay-panel{inset:6px!important;padding:6px!important}.legacy-result-panel.result-overlay-panel .result-card{padding:10px}.legacy-result-panel.result-overlay-panel h2{font-size:16px}}
+    `;
+    d.head.appendChild(style);
+
+    const board=d.querySelector('.board-shell'),result=d.getElementById('result');
+    if(board&&result&&!result.dataset.overlayInstalled){
+      const card=d.createElement('div');card.className='result-card';
+      while(result.firstChild)card.appendChild(result.firstChild);
+      result.appendChild(card);
+      result.classList.add('result-overlay-panel');
+      board.appendChild(result);
+      result.dataset.overlayInstalled='1';
+    }
+
+    const score=d.getElementById('score-panel');
+    if(score&&!score.dataset.keepVisible){
+      score.dataset.keepVisible='1';
+      const keep=()=>{const s=d.defaultView&&d.defaultView.__v1rSession;if(s&&s.runDone&&score.hidden)score.hidden=false;};
+      new MutationObserver(keep).observe(score,{attributes:true,attributeFilter:['hidden']});
+      keep();
+    }
+  }
+  frame.addEventListener('load',()=>{install();setTimeout(install,50);setTimeout(install,250);setTimeout(install,800)});
+  const timer=setInterval(install,150);
+  setTimeout(()=>clearInterval(timer),15000);
+})();
+</script>
+</body>
 </html>
