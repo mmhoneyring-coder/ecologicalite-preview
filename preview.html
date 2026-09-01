@@ -6,15 +6,12 @@
     const doc=new DOMParser().parseFromString(raw,'text/html');
     const req=(sel)=>{const el=doc.querySelector(sel);if(!el)throw Error('preview patch target missing: '+sel);return el};
 
-    // Mobile information order: STAGE -> counts/score -> board.
     const head=req('.pc-headrow'),top=req('.pc-headrow .top'),cards=req('.pc-headrow .cards');
     head.insertBefore(top,cards);
 
-    // Compact playback controls.
     const speedWrap=req('.speed-wrap');
     speedWrap.innerHTML='<div class="speed-head">再生</div><div class="playback-compact" role="group" aria-label="再生操作"><button id="play-toggle" type="button" aria-label="一時停止">⏸</button><button id="speed-cycle" type="button" aria-label="再生速度 1倍">1×</button></div>';
 
-    // Detail overlay is anchored to the graph itself.
     const graph=req('#score-graph'),detail=req('#graph-detail-overlay');
     const graphWrap=doc.createElement('div');graphWrap.className='graph-preview-wrap';
     graph.parentNode.insertBefore(graphWrap,graph);graphWrap.append(graph,detail);
@@ -32,10 +29,14 @@
 `;
     doc.head.append(style);
 
-    const runtime=req('#v1r-runtime');let js=runtime.textContent;
+    const moduleRuntime=req('#v1r-runtime');let moduleJs=moduleRuntime.textContent;
+    const moduleNeedle="const formatScore=n=>Number(n.toFixed(2)).toLocaleString('ja-JP');";
+    if(!moduleJs.includes(moduleNeedle))throw Error('runtime patch missing: integer score');
+    moduleRuntime.textContent=moduleJs.replace(moduleNeedle,"const formatScore=n=>Math.round(Number(n)||0).toLocaleString('ja-JP');");
+
+    const runtime=req('#v1r-ui');let js=runtime.textContent;
     const rep=(a,b,label)=>{if(!js.includes(a))throw Error('runtime patch missing: '+label);js=js.replace(a,b)};
     rep("const {paintScoreGraph,runTotals}=V1R[\"./score-view.mjs\"];","const {formatScore,paintScoreGraph,runTotals}=V1R[\"./score-view.mjs\"];",'score import');
-    rep("const formatScore=n=>Number(n.toFixed(2)).toLocaleString('ja-JP');","const formatScore=n=>Math.round(Number(n)||0).toLocaleString('ja-JP');",'integer score');
     rep("let base,images,session,clock,raf=0,selected=null,seed=DEFAULT_SEED,speed=1;","let base,images,session,clock,raf=0,selected=null,seed=DEFAULT_SEED,speed=1,paused=false;Object.defineProperty(window,'__v1rSession',{configurable:true,get:()=>session});",'runtime state');
     rep("$('set-turn').textContent=`Set${d.set} T${d.turn} / ${d.setLimit} · このSet ${number(d.setScore)}点`;","$('set-turn').textContent=`Set${d.set} T${d.turn} / ${d.setLimit} · このSet ${formatScore(d.setScore)}点`;",'set score');
     rep("$('score').textContent=number(d.setScore);$('progress').max=d.stageLength;$('progress').value=d.stageTurn;","$('score').textContent=formatScore(d.setScore);$('progress').max=d.stageLength;$('progress').value=d.stageTurn;",'current score');
@@ -56,7 +57,6 @@
     rep("  for(const button of document.querySelectorAll('[data-speed]'))button.onclick=()=>{\n    const next=Number(button.dataset.speed);if(clock)clock.setSpeed(next,performance.now());speed=next;paint();\n    if(clock&&session.done){cancelAnimationFrame(raf);finish();}\n  };","  $('play-toggle').onclick=()=>setPaused(!paused);\n  $('speed-cycle').onclick=cycleSpeed;",'playback binding');
     runtime.textContent=js;
 
-    // Touch ability popover and expanded graph details for the public preview.
     const patch=doc.createElement('script');patch.textContent=`
 (()=>{
  const byId=id=>document.getElementById(id);let anchor=null;
