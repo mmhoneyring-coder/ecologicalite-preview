@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><title>EcologicaLite Preview</title><style>html,body{margin:0;background:#081018;color:#e9f1f8;font-family:system-ui,-apple-system,sans-serif}#loading{display:grid;place-items:center;min-height:100vh;font-size:14px;color:#9fb0c1}</style></head><body><div id="loading">EcologicaLite を読み込み中…</div><script>
+(async()=>{
+  try{
+    let html=await (await fetch('./index.html?v='+Date.now(),{cache:'no-store'})).text();
+    html=html.replace(
+      "let base,images,session,clock,raf=0,selected=null,seed=DEFAULT_SEED,speed=1;",
+      "let base,images,session,clock,raf=0,selected=null,seed=DEFAULT_SEED,speed=1;Object.defineProperty(window,'__v1rSession',{configurable:true,get:()=>session});"
+    );
+    html=html.replace(
+      "function toggleGraphDetails(force){const o=$('graph-detail-overlay');const open=force??o.hidden;o.hidden=!open;if(open)renderGraphDetails();$('graph-detail').setAttribute('aria-pressed',String(open));}",
+      "function toggleGraphDetails(force){const o=$('graph-detail-overlay');const open=force??o.hidden;o.hidden=!open;if(open)(window.__v1rRenderGraphDetails||renderGraphDetails)();$('graph-detail').setAttribute('aria-pressed',String(open));}"
+    );
+    html=html.replace(
+      "if(!$('graph-detail-overlay').hidden)renderGraphDetails();",
+      "if(!$('graph-detail-overlay').hidden)(window.__v1rRenderGraphDetails||renderGraphDetails)();"
+    );
+    const patch=`<script>
+(()=>{
+ const byId=id=>document.getElementById(id);
+ const style=document.createElement('style');
+ style.textContent='.ability-item.tap-tip::after{display:none!important}.ability-popover{position:fixed;z-index:180;max-width:min(250px,calc(100vw - 16px));padding:8px 9px;border:1px solid #617892;border-radius:8px;background:#101a27;color:#edf4fb;font-size:10px;line-height:1.4;white-space:normal;box-shadow:0 10px 28px rgba(0,0,0,.45);pointer-events:none}.ability-popover[hidden]{display:none!important}.stage-detail-list{display:grid;gap:5px}.stage-detail-item{padding:6px;border:1px solid #2d4257;border-radius:7px;background:#0d1824}.stage-detail-title{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:4px}.stage-detail-title strong{font-size:9px;color:#e8d089}.stage-detail-title span{font-size:9px;font-weight:750;color:#e9f1f8}.stage-detail-grid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px}.stage-detail-grid dt{color:#8195a9;font-size:7.5px;white-space:nowrap}.stage-detail-grid dd{margin:0;color:#d9e4ef;font-size:7.5px;line-height:1.3;text-align:right;font-variant-numeric:tabular-nums}';
+ document.head.append(style);
+ let anchor=null;
+ function pop(){let p=byId('ability-popover');if(!p){p=document.createElement('div');p.id='ability-popover';p.className='ability-popover';p.hidden=true;document.body.append(p)}return p}
+ function hide(){const p=pop();anchor=null;p.hidden=true}
+ function show(item){const text=item&&item.dataset?item.dataset.tip:'';if(!text)return;const p=pop();p.textContent=text;p.hidden=false;anchor=item;p.style.left='8px';p.style.top='8px';const r=item.getBoundingClientRect(),q=p.getBoundingClientRect(),m=8;let left=Math.max(m,Math.min(innerWidth-q.width-m,r.left+r.width/2-q.width/2));let top=r.top-q.height-m;if(top<m)top=r.bottom+m;if(top+q.height>innerHeight-m)top=Math.max(m,innerHeight-q.height-m);p.style.left=Math.round(left)+'px';p.style.top=Math.round(top)+'px'}
+ document.addEventListener('click',e=>{const root=byId('owned-abilities'),item=e.target.closest&&e.target.closest('.ability-item');if(item&&root&&root.contains(item)&&((matchMedia('(hover: none)').matches)||navigator.maxTouchPoints>0)){e.preventDefault();e.stopImmediatePropagation();if(anchor===item&&!pop().hidden)hide();else show(item);return}if(anchor&&!item)hide()},true);
+ function num(v){if(v===null||v===undefined||Number.isNaN(Number(v)))return '—';return Number(Number(v).toFixed(2)).toLocaleString('ja-JP')}
+ function trio(a,b,c){return '植物 '+num(a)+' / 草食 '+num(b)+' / 肉食 '+num(c)}
+ window.__v1rRenderGraphDetails=()=>{
+   const root=byId('graph-detail-content'),s=window.__v1rSession;if(!root||!s)return;
+   const d=s.diagnostic(),list=document.createElement('div');list.className='stage-detail-list';
+   for(let stage=1;stage<=6;stage++){
+     const r=s.results.find(x=>x.set===d.set&&x.stage===stage),current=stage===d.stage&&!s.runDone;
+     const item=document.createElement('section');item.className='stage-detail-item';
+     const title=document.createElement('div');title.className='stage-detail-title';const st=document.createElement('strong'),sc=document.createElement('span');st.textContent='STAGE '+stage;sc.textContent=r?num(r.score.total)+'点':current?num(d.score.total)+'点':'—';title.append(st,sc);item.append(title);
+     const dl=document.createElement('dl');dl.className='stage-detail-grid';const add=(k,v)=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;dl.append(dt,dd)};
+     if(r){const e=r.events||{},cycle=Number(e.lifecycleSeedsCreated||0)+Number(e.plantRegrown||0)+Number(e.eatenPlantDormancyRegrow||0);add('終了個体',trio(r.counts&&r.counts.plants,r.counts&&r.counts.herbs,r.counts&&r.counts.carns));add('個体範囲','植 '+num(r.minCounts&&r.minCounts.plants)+'–'+num(r.maxCounts&&r.maxCounts.plants)+' / 草 '+num(r.minCounts&&r.minCounts.herbs)+'–'+num(r.maxCounts&&r.maxCounts.herbs)+' / 肉 '+num(r.minCounts&&r.minCounts.carns)+'–'+num(r.maxCounts&&r.maxCounts.carns));add('摂食 / 捕食',num(e.plantEaten)+' / '+num(e.herbEaten));add('出生 草 / 肉',num(e.herbBirths)+' / '+num(e.carnBirths));add('自然死 草 / 肉',num(e.herbNaturalDeaths)+' / '+num(e.carnNaturalDeaths));add('植物供給 活動 / 死体',num(e.activityPlantsCreated)+' / '+num(e.corpsePlantsCreated));add('植物供給 周期 / 能力',num(cycle)+' / '+num(Number(e.oneShotPlantsCreated||0)));add('活動 獲得 / 消費 / 残',num(r.activity&&r.activity.earned)+' / '+num(r.activity&&r.activity.spent)+' / '+num(r.activity&&r.activity.end))}else if(current){add('現在個体',trio(d.plants,d.herbs,d.carns));add('状態',d.phase==='running'?'進行中':'能力選択待ち')}else add('状態','未到達');item.append(dl);list.append(item)
+   }
+   const note=document.createElement('p');note.className='graph-detail-note';note.textContent='現在のSetのStage別実数値。より細かな得点内訳や能力診断は内部記録／CSVに保持しています。';root.replaceChildren(list,note)
+ };
+ const g=byId('graph-detail');if(g)g.addEventListener('click',()=>setTimeout(()=>window.__v1rRenderGraphDetails(),0));
+})();
+<\/script>`;
+    html=html.replace('</body>',patch+'</body>');
+    document.open();document.write(html);document.close();
+  }catch(e){document.body.innerHTML='<pre style="white-space:pre-wrap;padding:16px">読み込みに失敗しました。\n'+String(e)+'</pre>'}
+})();
+</script></body></html>
