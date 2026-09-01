@@ -6,233 +6,27 @@
 <meta name="robots" content="noindex,nofollow,noarchive">
 <title>EcologicaLite PC layout prototype</title>
 <style>
-:root{
-  color-scheme:dark;
-  --bg:#081018;
-  --panel:#101a27;
-  --panel2:#132130;
-  --line:#2b4055;
-  --line2:#40566f;
-  --text:#e8f0f7;
-  --muted:#8397aa;
-  --mint:#94d5bd;
-  --gold:#e7c86d;
-  --plant:#54b878;
-  --herb:#d5d8a8;
-  --carn:#d9876a;
-}
-*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,"Segoe UI","Yu Gothic UI",sans-serif}
-body{min-height:100vh;overflow:auto}
-.page{
-  min-height:100vh;
-  display:flex;
-  align-items:flex-start;
-  justify-content:flex-start;
-  padding:50px 24px 24px clamp(20px,2.3vw,42px);
-}
-.prototype{
-  position:relative;
-  display:grid;
-  grid-template-columns:132px 620px 154px;
-  gap:8px;
-  width:max-content;
-  max-width:calc(100vw - 48px);
-  align-items:stretch;
-}
-.brand{
-  position:absolute;
-  right:1px;
-  top:-29px;
-  font-size:10px;
-  font-weight:800;
-  letter-spacing:.07em;
-  color:var(--mint);
-  white-space:nowrap;
-}
-.rail,.center{min-width:0}
-.rail{
-  height:100%;
-  min-height:0;
-  display:flex;
-  flex-direction:column;
-  gap:7px;
-}
-.card,.stage,.stats,.graph-card,.ability-card,.hp-card,.controls,.restart{
-  border:1px solid var(--line);
-  background:linear-gradient(180deg,rgba(20,34,49,.96),rgba(13,24,36,.96));
-  border-radius:9px;
-}
-.stage{padding:8px 9px 9px}
-.eyebrow{color:#71879b;font-size:7px;font-weight:800;letter-spacing:.12em}
-.stage strong{display:block;margin-top:2px;font-size:15px;line-height:1.1;white-space:nowrap}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:0;background:transparent;border:0}
-.stat{
-  position:relative;
-  height:58px;
-  padding:7px 7px;
-  border:1px solid var(--line);
-  background:var(--panel2);
-  border-radius:8px;
-  overflow:hidden;
-}
-.stat small{display:block;color:#879caf;font-size:7px;font-weight:700;white-space:nowrap}
-.stat b{position:absolute;right:7px;bottom:6px;font-size:18px;line-height:1;font-variant-numeric:tabular-nums}
-.dot{position:absolute;left:7px;bottom:8px;width:14px;height:14px;border-radius:4px;background:var(--plant);box-shadow:0 0 0 1px rgba(255,255,255,.08) inset}
-.dot.herb{background:var(--herb);border-radius:50%}
-.dot.carn{background:var(--carn);clip-path:polygon(50% 0,100% 100%,0 100%)}
-.graph-card{margin-top:1px;padding:8px 7px 7px;min-height:0;display:flex;flex:1;flex-direction:column}
-.graph-head{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:7px}
-.graph-head strong{font-size:8px;white-space:nowrap}.graph-head span{color:var(--muted);font-size:7px;white-space:nowrap}
-.graph{
-  position:relative;
-  flex:1;
-  min-height:146px;
-  overflow:hidden;
-  border:1px solid #24394d;
-  border-radius:6px;
-  background:
-    linear-gradient(to right,transparent 24%,rgba(111,137,160,.11) 25%,transparent 26%,transparent 49%,rgba(111,137,160,.11) 50%,transparent 51%,transparent 74%,rgba(111,137,160,.11) 75%,transparent 76%),
-    linear-gradient(to bottom,transparent 24%,rgba(111,137,160,.11) 25%,transparent 26%,transparent 49%,rgba(111,137,160,.11) 50%,transparent 51%,transparent 74%,rgba(111,137,160,.11) 75%,transparent 76%),
-    #0a141f;
-}
-.graph svg{position:absolute;inset:0;width:100%;height:100%}
-.graph-actions{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:7px}
-button{height:29px;border:1px solid var(--line2);border-radius:7px;background:#152335;color:#d9e5ef;font:inherit;font-size:8px;font-weight:700;white-space:nowrap}
-.center{display:flex;flex-direction:column;align-self:start}
-.board-shell{
-  position:relative;
-  width:620px;
-  aspect-ratio:28/18;
-  overflow:hidden;
-  border:1px solid #355068;
-  border-radius:9px;
-  background:#07131d;
-  box-shadow:0 16px 42px rgba(0,0,0,.25)
-}
-.board{
-  position:absolute;inset:7px 30px 7px 7px;
-  border:1px solid #284258;
-  border-radius:7px;
-  overflow:hidden;
-  background:
-    radial-gradient(circle at 10% 22%,#58bb7b 0 3px,transparent 3.3px),
-    radial-gradient(circle at 16% 67%,#d5d8a8 0 4px,transparent 4.4px),
-    radial-gradient(circle at 33% 30%,#58bb7b 0 3px,transparent 3.3px),
-    radial-gradient(circle at 48% 75%,#d9876a 0 4px,transparent 4.5px),
-    radial-gradient(circle at 60% 42%,#58bb7b 0 3px,transparent 3.3px),
-    radial-gradient(circle at 72% 20%,#d5d8a8 0 4px,transparent 4.4px),
-    radial-gradient(circle at 84% 66%,#58bb7b 0 3px,transparent 3.3px),
-    repeating-linear-gradient(0deg,transparent 0 20px,rgba(72,103,126,.09) 20px 21px),
-    repeating-linear-gradient(90deg,transparent 0 20px,rgba(72,103,126,.09) 20px 21px),
-    #0b1721;
-}
-.activity{
-  position:absolute;right:7px;top:50%;transform:translateY(-50%);width:15px;height:108px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;color:#728a9d;font-size:6.5px
-}
-.meter{position:relative;width:7px;flex:1;margin:4px 0;border:1px solid #37506a;border-radius:999px;background:#0d1b29;overflow:hidden}
-.meter::after{content:"";position:absolute;left:0;right:0;bottom:0;height:44%;background:#5ab78e}
-.time{height:27px;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;color:#93a9bb;font-size:8.5px;font-variant-numeric:tabular-nums}
-.ability-card{padding:7px 7px 6px;min-height:0;flex:0 0 auto}
-.section-title{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:5px}
-.section-title strong{font-size:9px}.section-title span{font-size:7px;color:var(--muted)}
-.ability{height:15px;line-height:9px;padding:2px 5px;border:1px solid #6b5c2f;border-radius:5px;background:#4f451e;color:#f3dda0;font-size:7px;font-weight:700;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ability:last-child{margin-bottom:0}
-.ability.normal{border-color:#36516a;background:#132334;color:#d9e6f0}
-.spacer{flex:1;min-height:7px}
-.hp-card{padding:8px 8px}
-.hp-label{color:var(--muted);font-size:7px;margin-bottom:5px}.hp-row{display:flex;align-items:center;gap:6px}.avatar{width:20px;height:20px;border-radius:50%;background:var(--herb);flex:0 0 auto}
-.hp-main{flex:1;min-width:0}.hp-main strong{display:block;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hp-bar{height:5px;margin-top:4px;border-radius:999px;background:#213448;overflow:hidden}.hp-bar::after{content:"";display:block;width:68%;height:100%;background:#78c39a}
-.hp-value{font-size:7px;color:#bfd0dc;font-variant-numeric:tabular-nums;white-space:nowrap}
-.controls{display:grid;grid-template-columns:1.35fr .8fr;gap:5px;padding:6px}
-.controls button{height:31px;border-radius:999px}
-.restart{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:6px}
-.restart button{height:31px;border-radius:999px;font-size:7.5px}
-.note{position:fixed;right:12px;bottom:9px;color:#53697d;font-size:7px}
-@media(max-width:1010px){
-  .page{padding-left:16px;padding-right:16px}
-  .prototype{transform-origin:top left;transform:scale(.92)}
-}
-@media(max-width:900px){
-  .prototype{transform:scale(.82)}
-}
+:root{color-scheme:dark;--bg:#081018;--panel:#101722;--line:#283445;--line2:#40566f;--text:#edf3fa;--muted:#9aaabe;--accent:#99d9bf;--gold:#efd17e}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}body{min-height:100vh;overflow:auto}
+.page{min-height:100vh;display:flex;align-items:flex-start;justify-content:flex-start;padding:50px 24px 24px clamp(20px,2.3vw,42px)}
+.prototype{position:relative;display:grid;grid-template-columns:132px 620px 154px;gap:8px;width:max-content;max-width:calc(100vw - 48px);align-items:stretch}
+.brand{position:absolute;right:1px;top:-30px;font-size:11px;font-weight:800;letter-spacing:.08em;color:#94d5bd;white-space:nowrap}
+.rail,.center{min-width:0}.rail{height:426px;min-height:0;display:flex;flex-direction:column;gap:7px}.center{display:flex;flex-direction:column;align-self:start}
+.stage{padding:1px 1px 3px}.set-label{font-size:8px;font-weight:750;letter-spacing:.09em;color:#a9d8c8;margin-bottom:3px}.stage strong{display:block;font-size:15px;line-height:1.08;white-space:nowrap}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:4px}.stat{--card-bg:#302b1c;--card-edge:#79683d;--card-accent:#efd17e;position:relative;height:55px;padding:7px 6px;border:1px solid var(--card-edge);border-radius:8px;background:var(--card-bg);box-shadow:inset 0 3px 0 var(--card-accent);overflow:hidden}.stat.plant{--card-bg:#192d20;--card-edge:#4d7951;--card-accent:#b5e58e}.stat.herb{--card-bg:#192a40;--card-edge:#466c9c;--card-accent:#9bcaff}.stat.carn{--card-bg:#37212a;--card-edge:#925766;--card-accent:#ffb0b9}.stat small{display:block;color:var(--card-accent);font-size:7px;font-weight:700;white-space:nowrap}.stat b{position:absolute;right:6px;bottom:6px;color:var(--card-accent);font-size:18px;line-height:1;font-weight:700;font-variant-numeric:tabular-nums}.creature-icon{position:absolute;left:7px;bottom:7px;width:14px;height:14px;image-rendering:pixelated}.plant-icon{border-radius:2px;background:#a4d485;box-shadow:5px -3px 0 -3px #c8ef9f}.herb-icon{border-radius:50%;background:#80b9ff;box-shadow:4px 1px 0 -2px #d9ecff}.carn-icon{background:#ff9292;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.graph-card{flex:1;min-height:0;padding:9px 8px 7px;border:1px solid var(--line);border-radius:10px;background:var(--panel);display:flex;flex-direction:column}.graph-head{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:6px}.graph-head strong{font-size:8px;letter-spacing:.03em;color:#efd17e;white-space:nowrap}.graph-head span{font-size:7px;color:var(--muted);white-space:nowrap}.graph{position:relative;flex:1;min-height:0;border-radius:7px;overflow:hidden;background:#0b111a}.graph::before{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,transparent 24%,rgba(40,52,69,.75) 25%,transparent 26%,transparent 49%,rgba(40,52,69,.75) 50%,transparent 51%,transparent 74%,rgba(40,52,69,.75) 75%,transparent 76%)}.graph svg{position:absolute;inset:0;width:100%;height:100%}.graph-actions{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px}
+button{height:29px;min-width:0;padding:0 6px;border:1px solid #40566f;border-radius:8px;background:#152335;color:#d9e5ef;font:inherit;font-size:8px;font-weight:600;white-space:nowrap}.graph-actions button{height:27px}
+.board-shell{position:relative;width:620px;aspect-ratio:28/18;overflow:hidden;border:1px solid #3b485a;border-radius:10px;background:#04070b}.board{position:absolute;inset:6px 29px 6px 6px;border-radius:6px;overflow:hidden;background:#071018}.grid{position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 19px,rgba(66,85,104,.08) 19px 20px),repeating-linear-gradient(90deg,transparent 0 19px,rgba(66,85,104,.08) 19px 20px)}.entity{position:absolute;width:7px;height:7px}.entity.p{border-radius:2px;background:#a4d485}.entity.h{width:8px;height:8px;border-radius:50%;background:#80b9ff}.entity.c{width:9px;height:9px;background:#ff9292;clip-path:polygon(50% 0,100% 100%,0 100%)}.entity.dead{width:6px;height:6px;border-radius:50%;background:#768190;opacity:.68}.activity{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:15px;height:112px;display:flex;flex-direction:column;align-items:center;color:#8195a9;font-size:6.5px;font-variant-numeric:tabular-nums}.meter{position:relative;width:8px;flex:1;margin:4px 0;border:1px solid #73988b;border-radius:3px;background:#0e1820;overflow:hidden}.meter::after{content:"";position:absolute;left:0;right:0;bottom:0;height:44%;background:#99d9bf}.time{height:27px;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;color:#9aaabe;font-size:9px;font-variant-numeric:tabular-nums}
+.ability-card{padding:8px 7px 7px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}.section-title{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:5px}.section-title strong{font-size:9px}.section-title span{font-size:7px;color:var(--muted)}.ability{height:16px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px;margin-bottom:2px;padding:2px 5px;border:1px solid #bda35b;border-radius:5px;background:#5b4d20;color:#ffe89b;font-size:7px;font-weight:700;line-height:1;overflow:hidden}.ability.normal{border-color:#36516a;background:#132334;color:#d9e6f0}.ability .name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ability .stack{color:#6f8193;font-size:6.5px;font-weight:600;white-space:nowrap}.ability.set .stack{color:#cdbf8f}.ability:last-child{margin-bottom:0}.spacer{flex:1;min-height:7px}
+.hp-card{padding:8px;border:1px solid var(--line);border-radius:9px;background:#101722}.hp-label{margin-bottom:5px;color:#9aaabe;font-size:7px}.hp-row{display:flex;align-items:center;gap:6px}.avatar{width:20px;height:20px;border-radius:50%;background:#80b9ff;box-shadow:0 0 0 1px #466c9c inset;flex:0 0 auto}.hp-main{flex:1;min-width:0}.hp-main strong{display:block;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hp-bar{height:5px;margin-top:4px;border-radius:999px;background:#233345;overflow:hidden}.hp-bar::after{content:"";display:block;width:68%;height:100%;background:#99d9bf}.hp-value{font-size:7px;color:#bfd0dc;font-variant-numeric:tabular-nums;white-space:nowrap}
+.controls{display:grid;grid-template-columns:1.35fr .8fr;gap:5px}.controls button{height:36px;border-radius:9px;background:#17263a;font-size:14px;font-weight:750;line-height:1}.controls button:last-child{font-size:10px;color:#d7e4ef}.restart{display:grid;grid-template-columns:1fr 1fr;gap:5px}.restart button{height:34px;border-radius:999px;background:#152335;color:#cdd9e6;font-size:7.5px;font-weight:500}.note{position:fixed;right:12px;bottom:9px;color:#53697d;font-size:7px}
+@media(max-width:1010px){.page{padding-left:16px;padding-right:16px}.prototype{transform-origin:top left;transform:scale(.92)}}@media(max-width:900px){.prototype{transform:scale(.82)}}
 </style>
 </head>
 <body>
-<div class="page">
-  <main class="prototype" aria-label="PC layout prototype">
-    <div class="brand">EcologicaLite</div>
-
-    <aside class="rail left">
-      <section class="stage">
-        <div class="eyebrow">SET 1</div>
-        <strong>STAGE 3</strong>
-      </section>
-
-      <section class="stats" aria-label="個体数と得点">
-        <div class="stat"><small>植物</small><span class="dot"></span><b>96</b></div>
-        <div class="stat"><small>草食</small><span class="dot herb"></span><b>18</b></div>
-        <div class="stat"><small>肉食</small><span class="dot carn"></span><b>4</b></div>
-        <div class="stat"><small>得点</small><b>1,284</b></div>
-      </section>
-
-      <section class="graph-card">
-        <div class="graph-head"><strong>SET 1 · 累計得点</strong><span>3 / 6</span></div>
-        <div class="graph" aria-label="グラフモック">
-          <svg viewBox="0 0 190 130" preserveAspectRatio="none" aria-hidden="true">
-            <polyline points="0,112 36,92 74,84 113,54 151,40 190,19" fill="none" stroke="#8fc6b0" stroke-width="2" />
-          </svg>
-        </div>
-        <div class="graph-actions"><button>詳細</button><button>コピー</button></div>
-      </section>
-    </aside>
-
-    <section class="center">
-      <div class="board-shell">
-        <div class="board"></div>
-        <div class="activity"><span>12</span><div class="meter"></div><span>0</span></div>
-      </div>
-      <div class="time">00:13.8</div>
-    </section>
-
-    <aside class="rail right">
-      <section class="ability-card">
-        <div class="section-title"><strong>取得能力</strong><span>12</span></div>
-        <div class="ability">植物周期短縮</div>
-        <div class="ability normal">草食摂食回復 +2　1/3</div>
-        <div class="ability normal">繁殖得点 +15%　1/3</div>
-        <div class="ability normal">植物摂食得点 +15%　1/3</div>
-        <div class="ability normal">草食子HP +30　1/3</div>
-        <div class="ability normal">生存得点 +15%　1/3</div>
-        <div class="ability">危険察知</div>
-        <div class="ability normal">肉食捕食回復 +10　1/3</div>
-        <div class="ability normal">肉食子HP +45　1/3</div>
-        <div class="ability normal">肉食得点 +10%　1/3</div>
-        <div class="ability normal">繁殖得点 +15%　2/3</div>
-        <div class="ability normal">活動植物 -1　1/3</div>
-      </section>
-
-      <div class="spacer"></div>
-
-      <section class="hp-card">
-        <div class="hp-label">選択中の個体</div>
-        <div class="hp-row">
-          <span class="avatar"></span>
-          <div class="hp-main"><strong>草食 #H-021</strong><div class="hp-bar"></div></div>
-          <span class="hp-value">122/180</span>
-        </div>
-      </section>
-
-      <section class="controls">
-        <button>一時停止</button><button>2×</button>
-      </section>
-
-      <section class="restart">
-        <button>やり直し</button><button>最初から</button>
-      </section>
-    </aside>
-  </main>
-</div>
-<div class="note">PC LAYOUT PROTOTYPE · layout only</div>
-</body>
-</html>
+<div class="page"><main class="prototype" aria-label="PC layout prototype"><div class="brand">EcologicaLite</div>
+<aside class="rail left"><section class="stage"><div class="set-label">SET 1</div><strong>STAGE 3</strong></section><section class="stats" aria-label="個体数と得点"><div class="stat plant"><small>植物</small><span class="creature-icon plant-icon"></span><b>96</b></div><div class="stat herb"><small>草食</small><span class="creature-icon herb-icon"></span><b>18</b></div><div class="stat carn"><small>肉食</small><span class="creature-icon carn-icon"></span><b>4</b></div><div class="stat score"><small>得点 <span style="color:#8396aa;font-size:6px">SET 1</span></small><b>1,284</b></div></section><section class="graph-card"><div class="graph-head"><strong>SET 1 · 累計得点</strong><span>3 / 6</span></div><div class="graph"><svg viewBox="0 0 116 190" preserveAspectRatio="none" aria-hidden="true"><path d="M4 173 L22 150 L42 135 L60 93 L79 68 L98 51 L112 30 L112 187 L4 187 Z" fill="#efd17e" opacity=".08"/><polyline points="4,173 22,150 42,135 60,93 79,68 98,51 112,30" fill="none" stroke="#efd17e" stroke-width="2"/><circle cx="112" cy="30" r="4" fill="#fff0b9" stroke="#efd17e" stroke-width="2"/></svg></div><div class="graph-actions"><button>詳細</button><button>コピー</button></div></section></aside>
+<section class="center"><div class="board-shell"><div class="board"><div class="grid"></div><i class="entity p" style="left:8%;top:13%"></i><i class="entity p" style="left:16%;top:64%"></i><i class="entity p" style="left:22%;top:35%"></i><i class="entity p" style="left:31%;top:81%"></i><i class="entity p" style="left:40%;top:19%"></i><i class="entity p" style="left:48%;top:59%"></i><i class="entity p" style="left:56%;top:37%"></i><i class="entity p" style="left:65%;top:74%"></i><i class="entity p" style="left:72%;top:26%"></i><i class="entity p" style="left:84%;top:57%"></i><i class="entity p" style="left:92%;top:17%"></i><i class="entity p" style="left:11%;top:44%"></i><i class="entity p" style="left:27%;top:54%"></i><i class="entity p" style="left:36%;top:68%"></i><i class="entity p" style="left:59%;top:88%"></i><i class="entity p" style="left:77%;top:46%"></i><i class="entity p" style="left:90%;top:79%"></i><i class="entity h" style="left:18%;top:28%"></i><i class="entity h" style="left:35%;top:47%"></i><i class="entity h" style="left:52%;top:72%"></i><i class="entity h" style="left:68%;top:15%"></i><i class="entity h" style="left:81%;top:66%"></i><i class="entity h" style="left:43%;top:29%"></i><i class="entity h" style="left:73%;top:84%"></i><i class="entity c" style="left:61%;top:49%"></i><i class="entity c" style="left:88%;top:37%"></i><i class="entity dead" style="left:24%;top:73%"></i></div><div class="activity"><span>12</span><div class="meter"></div><span>0</span></div></div><div class="time">00:13.8</div></section>
+<aside class="rail right"><section class="ability-card"><div class="section-title"><strong>取得能力</strong><span>12</span></div><div class="ability set"><span class="name">植物周期短縮</span><span class="stack">SET</span></div><div class="ability normal"><span class="name">草食摂食回復 +2</span><span class="stack">1/3</span></div><div class="ability normal"><span class="name">繁殖得点 +15%</span><span class="stack">1/3</span></div><div class="ability normal"><span class="name">植物摂食得点 +15%</span><span class="stack">1/3</span></div><div class="ability normal"><span class="name">草食子HP +30</span><span class="stack">1/3</span></div><div class="ability normal"><span class="name">生存得点 +15%</span><span class="stack">1/3</span></div><div class="ability set"><span class="name">危険察知</span><span class="stack">SET</span></div><div class="ability normal"><span class="name">肉食捕食回復 +10</span><span class="stack">1/3</span></div><div class="ability normal"><span class="name">肉食子HP +45</span><span class="stack">1/3</span></div><div class="ability normal"><span class="name">肉食得点 +10%</span><span class="stack">1/3</span></div><div class="ability normal"><span class="name">繁殖得点 +15%</span><span class="stack">2/3</span></div><div class="ability normal"><span class="name">活動植物 -1</span><span class="stack">1/3</span></div></section><div class="spacer"></div><section class="hp-card"><div class="hp-label">選択中の個体</div><div class="hp-row"><span class="avatar"></span><div class="hp-main"><strong>草食 #H-021</strong><div class="hp-bar"></div></div><span class="hp-value">122/180</span></div></section><section class="controls"><button aria-label="一時停止">⏸</button><button>1×</button></section><section class="restart"><button>やり直し</button><button>最初から</button></section></aside>
+</main></div><div class="note">PC LAYOUT PROTOTYPE · mobile UI styling</div>
+</body></html>
