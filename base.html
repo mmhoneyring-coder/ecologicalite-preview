@@ -2129,6 +2129,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .overlay .choice em{display:none}
 .speed button{display:flex;align-items:center;justify-content:center;width:100%;height:100%;min-width:0;padding:0;border:1px solid #40566f;border-radius:9px;background:#17263a;color:var(--text);font-size:13px;line-height:1}
 .speed button[aria-pressed="true"]{background:#245443;border-color:#75b59c}
+.playback-compact{height:44px;display:grid;grid-template-columns:1.35fr .8fr;gap:5px}.playback-compact button{min-width:0;height:44px;padding:0;border:1px solid #40566f;border-radius:9px;background:#17263a;color:#e8f0f7;font-size:16px;font-weight:750;line-height:1;touch-action:manipulation}.playback-compact button:last-child{font-size:12px;color:#d7e4ef}.playback-compact button.is-paused{background:#245443;border-color:#75b59c}.playback-compact button:disabled{opacity:.45;cursor:default}
 .hp-compact{position:relative}
 .hp-compact button#unpin{position:absolute;inset:0;opacity:0;width:100%;height:100%;padding:0;border:0;cursor:pointer}
 #animal-id{display:flex;align-items:center;gap:4px;font-size:17px;font-weight:800;white-space:nowrap}
@@ -2187,6 +2188,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .bottom-runtime-actions button{flex:1;min-width:0;height:30px;padding:0 9px;border:1px solid #40566f;border-radius:999px;background:#152335;color:#cdd9e6;font-size:10px;white-space:nowrap}
 .bottom-runtime-actions #back{width:auto!important;margin:0!important;order:0!important}
 @media(max-width:390px){
+  .playback-compact{height:42px;gap:4px}.playback-compact button{height:42px;font-size:15px}.playback-compact button:last-child{font-size:11px}
  .speed button{font-size:11px}.overlay .choice span{font-size:7px}#animal-id{font-size:15px}#animal-hp-values{font-size:10.5px}#animal-species{width:18px;height:18px}
 }
 </style>
@@ -2236,7 +2238,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 
     <div class="timeblock"><progress id="progress" class="bar" value="0" max="100" aria-label="現在Stageの進行"></progress><div class="control-meta"><div id="time" class="time">0.0 / 25.0秒</div></div></div>
     <div class="speed-row">
-      <div class="speed-wrap"><div class="speed-head">再生速度</div><div class="speed" role="group" aria-label="再生速度"><button type="button" data-speed="1" aria-pressed="true">1x</button><button type="button" data-speed="2" aria-pressed="false">2x</button><button type="button" data-speed="4" aria-pressed="false">4x</button></div></div>
+      <div class="speed-wrap"><div class="speed-head">再生</div><div class="playback-compact" role="group" aria-label="再生操作"><button id="play-toggle" type="button" aria-label="一時停止">⏸</button><button id="speed-cycle" type="button" aria-label="再生速度 1倍">1×</button></div></div>
       <div class="hp-wrap"><div class="hp-head">選択中の個体</div><div id="animal-hp" class="hp-compact"><strong id="animal-id"><i id="animal-species" class="hp-species none-icon" aria-hidden="true"></i>—</strong><em id="animal-hp-values">—</em><button id="unpin" type="button" aria-label="個体の選択を解除" hidden></button></div></div>
     </div>
     <div class="runtime-hidden" aria-hidden="true"><span id="map-size">28 × 18</span><span id="status">準備中</span><span id="turn">T0 / 100</span><span id="playback-rate">4T / 秒 · 1x</span><span id="set-turn"></span></div>
@@ -3421,7 +3423,7 @@ function createSession(api, base, seed, ability=null) {
 }
 class FixedClock {
   constructor(session,startMs,speed=1){
-    if(![1,2,4].includes(speed))throw Error('再生速度は1x/2x/4xです');
+    if(![1,4,8].includes(speed))throw Error('再生速度は1x/4x/8xです');
     this.session=session;this.lastMs=startMs;this.startTurn=session.world.turn;this.turnBudget=0;this.speed=speed;
   }
   advance(nowMs){
@@ -3431,7 +3433,7 @@ class FixedClock {
     let changed=false;while(this.session.world.turn<target){if(!this.session.step())break;changed=true;}return changed;
   }
   setSpeed(speed,nowMs){
-    if(![1,2,4].includes(speed))throw Error('再生速度は1x/2x/4xです');
+    if(![1,4,8].includes(speed))throw Error('再生速度は1x/4x/8xです');
     this.advance(nowMs);this.speed=speed;
   }
 }
@@ -3650,7 +3652,7 @@ return {SCALES,MARKERS,markerPixels,spriteRect,hitAnimal,AnimalObservation,activ
 V1R["./score-view.mjs"]=(()=>{
 // Presentation only. Read settled Stage results and the existing live Set score;
 // never award points or read/write the simulation RNG here.
-const formatScore=n=>Number(n.toFixed(2)).toLocaleString('ja-JP');
+const formatScore=n=>Math.round(Number(n)||0).toLocaleString('ja-JP');
 function scoreView(d){
   const settled=d.results.filter(r=>r.set===d.set),points=[{x:0,y:0}],rows=[];
   let cumulative=0;
@@ -3904,11 +3906,12 @@ const {pairedWorld,worldState}=V1R["./pairing.mjs"];
 const {offerAbilities,DEFAULT_SEED,SET_TEXT,FixedClock}=V1R["./session.mjs"];
 const {createRunSession}=V1R["./set1-session.mjs"];
 const {drawWorld,loadImages,hitAnimal,AnimalObservation,activityReading,paintActivity}=V1R["./renderer.mjs"];
-const {paintScoreGraph,runTotals}=V1R["./score-view.mjs"];
+const {formatScore,paintScoreGraph,runTotals}=V1R["./score-view.mjs"];
 const {loadConfig,assetSources}=V1R["./environment.mjs"];
 const {bindAnimalPointer}=V1R["./pointer-input.mjs"];
 const $=id=>document.getElementById(id),api={createEngine,pairedWorld,worldState};
-let base,images,session,clock,raf=0,selected=null,seed=DEFAULT_SEED,speed=1;
+let base,images,session,clock,raf=0,selected=null,seed=DEFAULT_SEED,speed=1,paused=false;
+Object.defineProperty(window,'__v1rSession',{configurable:true,get:()=>session});
 const observation=new AnimalObservation();let pointer=null,drawn=[];
 const previewButtons=[...document.querySelectorAll('[data-layout-preview]')];
 function setLayoutPreview(mode){
@@ -3946,6 +3949,19 @@ function observe(){
   species.className=`hp-species ${target?(target.type==='herb'?'herb-icon':'carn-icon'):'none-icon'}`;
   $('unpin').hidden=observation.pinnedId===null;$('field').style.cursor=hovered()?'pointer':'default';
 }
+function updatePlaybackControls(){
+  const play=$('play-toggle'),cycle=$('speed-cycle');
+  if(play){const available=Boolean(clock)&&!session?.done&&session?.phase==='running';play.disabled=!available;play.textContent=paused?'▶':'⏸';play.setAttribute('aria-label',paused?'再生':'一時停止');play.setAttribute('aria-pressed',String(paused));play.classList.toggle('is-paused',paused);}
+  if(cycle){cycle.textContent=`${speed}×`;cycle.setAttribute('aria-label',`再生速度 ${speed}倍`);}
+}
+function setPaused(next){
+  if(!clock||session?.done)return;next=Boolean(next);if(next===paused){updatePlaybackControls();return;}
+  if(next){const changed=clock.advance(performance.now());cancelAnimationFrame(raf);raf=0;paused=true;if(changed)paint();else updatePlaybackControls();if(session.done){paused=false;paint();finish();}}
+  else{paused=false;clock.lastMs=performance.now();updatePlaybackControls();raf=requestAnimationFrame(frame);}
+}
+function cycleSpeed(){
+  const values=[1,4,8],next=values[(values.indexOf(speed)+1)%values.length],now=performance.now();if(clock){if(paused)clock.speed=next;else clock.setSpeed(next,now);}speed=next;paint();if(clock&&session.done){cancelAnimationFrame(raf);paused=false;finish();}
+}
 function paint(){
   observation.resolve(session.world,session.effective.cfg,null);
   drawn=drawWorld($('field'),session.world,session.cfg,images,undefined,undefined,observation.pinnedId);observe();
@@ -3955,11 +3971,11 @@ function paint(){
   $('map-size').textContent=`${session.cfg.cols} × ${session.cfg.rows}`;
   document.documentElement.style.setProperty('--board-ratio',String(session.cfg.cols/session.cfg.rows));
   $('turn').textContent=`T${d.stageTurn} / ${d.stageLength}`;$('time').textContent=`${(d.stageTurn/4).toFixed(1)} / ${(d.stageLength/4).toFixed(1)}秒`;
-  $('set-turn').textContent=`Set${d.set} T${d.turn} / ${d.setLimit} · このSet ${number(d.setScore)}点`;
+  $('set-turn').textContent=`Set${d.set} T${d.turn} / ${d.setLimit} · このSet ${formatScore(d.setScore)}点`;
   $('score-label').textContent='現在得点';
-  $('score').textContent=number(d.setScore);$('progress').max=d.stageLength;$('progress').value=d.stageTurn;
+  $('score').textContent=formatScore(d.setScore);$('progress').max=d.stageLength;$('progress').value=d.stageTurn;
   $('playback-rate').textContent=`${4*speed}T / 秒 · ${speed}x`;
-  for(const button of document.querySelectorAll('[data-speed]'))button.setAttribute('aria-pressed',String(Number(button.dataset.speed)===speed));
+  updatePlaybackControls();
   $('score-panel').hidden=session.runDone;
   paintScoreGraph($('score-graph'),$('stage-score-rows'),$('score-graph-heading'),d);if(!$('graph-detail-overlay').hidden)renderGraphDetails();
   $('owned').textContent=Object.entries(d.normalStacks).map(([id,n])=>`${session.engine.NORMAL_ABILITIES[id].name} ×${n}`).join(' ／ ')||'通常能力：未取得';renderOwned(d);
@@ -3967,28 +3983,28 @@ function paint(){
   $('diagnostic').textContent=JSON.stringify(d,null,2);
 }
 function finish(){
-  clock=null;const complete=session.setDone,last=session.results.at(-1);
+  clock=null;paused=false;updatePlaybackControls();const complete=session.setDone,last=session.results.at(-1);
   if(!complete){$('active').hidden=true;selectNormal();return;}
   if(!session.runDone){$('active').hidden=true;selectSecondSet();return;}
   $('status').textContent='全12Stage完了';$('active').hidden=true;$('result').hidden=false;
   $('result-eyebrow').textContent='RUN COMPLETE';
   $('result-heading').textContent='12のStageを、観測しました。';
   $('result-score-label').textContent='TOTAL · 2Set合計';
-  $('final-score').textContent=number(session.runScore());
-  const totals=runTotals(session.results);$('final-set1').textContent=number(totals.sets[0]);$('final-set2').textContent=number(totals.sets[1]);
+  $('final-score').textContent=formatScore(session.runScore());
+  const totals=runTotals(session.results);$('final-set1').textContent=formatScore(totals.sets[0]);$('final-set2').textContent=formatScore(totals.sets[1]);
   const e=session.results.reduce((a,r)=>{for(const [k,v] of Object.entries(r.events))a[k]=(a[k]||0)+v;return a;},{}),s=last.score.components;
-  const rows=[['植物摂食',e.plantEaten],['捕食',e.herbEaten],['草食出生',e.herbBirths],['肉食出生',e.carnBirths],['草食自然死 / 捕食死',`${e.herbNaturalDeaths} / ${e.herbEaten}`],['肉食死亡',e.carnNaturalDeaths],['活動 / 死体由来植物',`${e.activityPlantsCreated} / ${e.corpsePlantsCreated}`],['最終Stage終了時生存点',number(s.herbSurvival+s.carnSurvival)],['ラン合計得点',number(session.runScore())]];
-  for(let set=1;set<=2;set++){rows.push([`Set${set}合計`,number(session.results.filter(r=>r.set===set).reduce((a,r)=>a+r.score.total,0))]);for(const r of session.results.filter(r=>r.set===set))rows.push([`Set${r.set} Stage${r.stage}得点`,number(r.score.total)]);}
+  const rows=[['植物摂食',e.plantEaten],['捕食',e.herbEaten],['草食出生',e.herbBirths],['肉食出生',e.carnBirths],['草食自然死 / 捕食死',`${e.herbNaturalDeaths} / ${e.herbEaten}`],['肉食死亡',e.carnNaturalDeaths],['活動 / 死体由来植物',`${e.activityPlantsCreated} / ${e.corpsePlantsCreated}`],['最終Stage終了時生存点',formatScore(s.herbSurvival+s.carnSurvival)],['ラン合計得点',formatScore(session.runScore())]];
+  for(let set=1;set<=2;set++){rows.push([`Set${set}合計`,formatScore(session.results.filter(r=>r.set===set).reduce((a,r)=>a+r.score.total,0))]);for(const r of session.results.filter(r=>r.set===set))rows.push([`Set${r.set} Stage${r.stage}得点`,formatScore(r.score.total)]);}
   $('result-details').replaceChildren(...rows.flatMap(([k,v])=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;return [dt,dd];}));
   $('replay').hidden=false;
 }
-function frame(now){if(clock.advance(now))paint();if(session.done){paint();finish();return;}raf=requestAnimationFrame(frame);}
-function runStage(){for(const b of previewButtons)b.setAttribute('aria-pressed',String(b.dataset.layoutPreview==='game'));clock=new FixedClock(session,performance.now(),speed);$('normal-selection').hidden=true;$('second-set-selection').hidden=true;$('result').hidden=true;$('active').hidden=false;$('status').textContent=`Set${session.set} Stage${session.stage}観測中`;$('ability-name').textContent=session.state.setRewards.map(id=>SET_TEXT[id][0]).join(' ＋ ');$('ability-description').textContent=session.state.setRewards.map(id=>SET_TEXT[id][1]).join(' / ');paint();raf=requestAnimationFrame(frame);}
+function frame(now){if(paused||!clock)return;if(clock.advance(now))paint();if(session.done){paint();paused=false;finish();return;}raf=requestAnimationFrame(frame);}
+function runStage(){paused=false;for(const b of previewButtons)b.setAttribute('aria-pressed',String(b.dataset.layoutPreview==='game'));clock=new FixedClock(session,performance.now(),speed);$('normal-selection').hidden=true;$('second-set-selection').hidden=true;$('result').hidden=true;$('active').hidden=false;$('status').textContent=`Set${session.set} Stage${session.stage}観測中`;$('ability-name').textContent=session.state.setRewards.map(id=>SET_TEXT[id][0]).join(' ＋ ');$('ability-description').textContent=session.state.setRewards.map(id=>SET_TEXT[id][1]).join(' / ');paint();raf=requestAnimationFrame(frame);}
 function start(ability){cancelAnimationFrame(raf);observation.reset();pointer=null;selected=ability;session=createRunSession(api,base,seed,ability);$('selection').hidden=true;$('back').hidden=false;runStage();}
 function selectSecondSet(){
   for(const b of previewButtons)b.setAttribute('aria-pressed',String(b.dataset.layoutPreview==='selection'));
   $('result').hidden=true;$('normal-selection').hidden=true;$('second-set-selection').hidden=false;$('status').textContent='Set2能力選択待ち';
-  $('set-summary').textContent=`Set1完了：${number(session.setScore())}点。通常能力5個を引き継ぎます。`;
+  $('set-summary').textContent=`Set1完了：${formatScore(session.setScore())}点。通常能力5個を引き継ぎます。`;
   $('second-set-choices').replaceChildren(...session.setOffers().map(id=>{const b=document.createElement('button'),name=document.createElement('strong'),desc=document.createElement('span');b.type='button';b.className='choice';b.dataset.ability=id;name.textContent=SET_TEXT[id][0];desc.textContent=SET_TEXT[id][1];b.append(name,desc);b.onclick=()=>{session.beginSet(id);observation.reset();pointer=null;runStage();};return b;}));
 }
 function selectNormal(){
@@ -4057,10 +4073,8 @@ try {base=await loadConfig();images=await loadImages(assetSources);bindAbilityTi
     hit:(x,y)=>{pointer={x,y};return hovered();},hover:(x,y)=>{pointer={x,y};observe();},
     select:target=>{observation.pin(target);pointer=null;paint();},clearHover:()=>{pointer=null;observe();}
   });
-  for(const button of document.querySelectorAll('[data-speed]'))button.onclick=()=>{
-    const next=Number(button.dataset.speed);if(clock)clock.setSpeed(next,performance.now());speed=next;paint();
-    if(clock&&session.done){cancelAnimationFrame(raf);finish();}
-  };
+  $('play-toggle').onclick=()=>setPaused(!paused);
+  $('speed-cycle').onclick=cycleSpeed;
   $('unpin').onclick=()=>{observation.reset();paint();};$('copy-results').onclick=copyResults;$('graph-detail').onclick=()=>toggleGraphDetails();$('graph-detail-close').onclick=()=>toggleGraphDetails(false);$('spec-open').onclick=()=>toggleSpec(true);$('spec-close').onclick=()=>toggleSpec(false);window.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('spec-overlay').hidden)toggleSpec(false);else if(!$('graph-detail-overlay').hidden)toggleGraphDetails(false);}});window.addEventListener('blur',()=>{pointer=null;if(session)observe();});
   $('seed-form').onsubmit=e=>{e.preventDefault();choose();};
   $('back').onclick=()=>{if(selected!==null&&!window.confirm('同じseedでSET1からやり直しますか？'))return;choose();};

@@ -9,9 +9,6 @@
     const head=req('.pc-headrow'),top=req('.pc-headrow .top'),cards=req('.pc-headrow .cards');
     head.insertBefore(top,cards);
 
-    const speedWrap=req('.speed-wrap');
-    speedWrap.innerHTML='<div class="speed-head">再生</div><div class="playback-compact" role="group" aria-label="再生操作"><button id="play-toggle" type="button" aria-label="一時停止">⏸</button><button id="speed-cycle" type="button" aria-label="再生速度 1倍">1×</button></div>';
-
     const graph=req('#score-graph'),detail=req('#graph-detail-overlay');
     const graphWrap=doc.createElement('div');graphWrap.className='graph-preview-wrap';
     graph.parentNode.insertBefore(graphWrap,graph);graphWrap.append(graph,detail);
@@ -19,45 +16,14 @@
     const style=doc.createElement('style');style.id='implemented-layout-v6';style.textContent=`
 .top{border-bottom:0}.stage{border:0;background:transparent;box-shadow:none;border-radius:0;padding:2px 0}
 .set-label{font-size:9px;font-weight:750;letter-spacing:.09em;color:#a9d8c8;background:transparent;border:0;border-radius:0;padding:1px 0 2px;margin-bottom:4px}
-.playback-compact{height:44px;display:grid;grid-template-columns:1.35fr .8fr;gap:5px}.playback-compact button{min-width:0;height:44px;padding:0;border:1px solid #40566f;border-radius:9px;background:#17263a;color:#e8f0f7;font-size:16px;font-weight:750;line-height:1;touch-action:manipulation}.playback-compact button:last-child{font-size:12px;color:#d7e4ef}.playback-compact button.is-paused{background:#245443;border-color:#75b59c}.playback-compact button:disabled{opacity:.45;cursor:default}
 .graph-panel,.abilities-panel{min-height:164px}.graph{height:112px}.graph-preview-wrap{position:relative;min-height:0}
 .graph-detail-overlay{position:absolute;inset:1px;z-index:40;padding:5px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(3,7,11,.38);backdrop-filter:blur(1.2px);-webkit-backdrop-filter:blur(1.2px)}.graph-detail-card{width:min(92%,300px);height:auto;max-height:94%;padding:7px 8px;border:1px solid rgba(112,137,161,.82);border-radius:9px;background:rgba(14,22,32,.78);box-shadow:0 8px 24px rgba(0,0,0,.28);overflow:auto;overscroll-behavior:contain}.graph-detail-head{position:sticky;top:0;z-index:1;margin:-2px -2px 5px;padding:2px;background:rgba(14,22,32,.82)}
 .bottom-runtime-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.bottom-runtime-actions button,.bottom-runtime-actions #back{width:100%!important;min-width:0!important;margin:0!important;order:initial!important}
 .ability-item.tap-tip::after{display:none!important}.ability-popover{position:fixed;z-index:180;max-width:min(250px,calc(100vw - 16px));padding:8px 9px;border:1px solid #617892;border-radius:8px;background:#101a27;color:#edf4fb;font-size:10px;line-height:1.4;white-space:normal;box-shadow:0 10px 28px rgba(0,0,0,.45);pointer-events:none}.ability-popover[hidden]{display:none!important}.stage-detail-list{display:grid;gap:5px}.stage-detail-item{padding:6px;border:1px solid #2d4257;border-radius:7px;background:rgba(13,24,36,.82)}.stage-detail-title{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:4px}.stage-detail-title strong{font-size:9px;color:#e8d089}.stage-detail-title span{font-size:9px;font-weight:750;color:#e9f1f8}.stage-detail-grid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px}.stage-detail-grid dt{color:#8195a9;font-size:7.5px;white-space:nowrap}.stage-detail-grid dd{margin:0;color:#d9e4ef;font-size:7.5px;line-height:1.3;text-align:right;font-variant-numeric:tabular-nums}
-@media(max-width:390px){.playback-compact{height:42px;gap:4px}.playback-compact button{height:42px;font-size:15px}.playback-compact button:last-child{font-size:11px}.graph-panel,.abilities-panel{min-height:156px}.graph{height:100px}.bottom-runtime-actions{gap:5px}.graph-detail-card{width:94%;padding:6px 7px}}
+@media(max-width:390px){.graph-panel,.abilities-panel{min-height:156px}.graph{height:100px}.bottom-runtime-actions{gap:5px}.graph-detail-card{width:94%;padding:6px 7px}}
 @media(min-width:640px){.pc-headrow .card.plant{grid-column:1}.pc-headrow .card.herb{grid-column:2}.pc-headrow .card.carn{grid-column:3}.pc-headrow .card.score{grid-column:4}.pc-headrow .stage{grid-column:5}.pc-headrow .brand{grid-column:6}}
 `;
     doc.head.append(style);
-
-    const moduleRuntime=req('#v1r-runtime');let moduleJs=moduleRuntime.textContent;
-    const moduleNeedle="const formatScore=n=>Number(n.toFixed(2)).toLocaleString('ja-JP');";
-    if(!moduleJs.includes(moduleNeedle))throw Error('runtime patch missing: integer score');
-    moduleJs=moduleJs.replace(moduleNeedle,"const formatScore=n=>Math.round(Number(n)||0).toLocaleString('ja-JP');");
-    moduleJs=moduleJs.replaceAll("[1,2,4].includes(speed)","[1,4,8].includes(speed)").replaceAll("再生速度は1x/2x/4xです","再生速度は1x/4x/8xです");
-    moduleRuntime.textContent=moduleJs;
-
-    const runtime=req('#v1r-ui');let js=runtime.textContent;
-    const rep=(a,b,label)=>{if(!js.includes(a))throw Error('runtime patch missing: '+label);js=js.replace(a,b)};
-    rep("const {paintScoreGraph,runTotals}=V1R[\"./score-view.mjs\"];","const {formatScore,paintScoreGraph,runTotals}=V1R[\"./score-view.mjs\"];",'score import');
-    rep("let base,images,session,clock,raf=0,selected=null,seed=DEFAULT_SEED,speed=1;","let base,images,session,clock,raf=0,selected=null,seed=DEFAULT_SEED,speed=1,paused=false;Object.defineProperty(window,'__v1rSession',{configurable:true,get:()=>session});",'runtime state');
-    rep("$('set-turn').textContent=`Set${d.set} T${d.turn} / ${d.setLimit} · このSet ${number(d.setScore)}点`;","$('set-turn').textContent=`Set${d.set} T${d.turn} / ${d.setLimit} · このSet ${formatScore(d.setScore)}点`;",'set score');
-    rep("$('score').textContent=number(d.setScore);$('progress').max=d.stageLength;$('progress').value=d.stageTurn;","$('score').textContent=formatScore(d.setScore);$('progress').max=d.stageLength;$('progress').value=d.stageTurn;",'current score');
-    rep("$('playback-rate').textContent=`${4*speed}T / 秒 · ${speed}x`;\n  for(const button of document.querySelectorAll('[data-speed]'))button.setAttribute('aria-pressed',String(Number(button.dataset.speed)===speed));","$('playback-rate').textContent=`${4*speed}T / 秒 · ${speed}x`;\n  updatePlaybackControls();",'playback paint');
-    rep("$('final-score').textContent=number(session.runScore());","$('final-score').textContent=formatScore(session.runScore());",'final score');
-    rep("$('final-set1').textContent=number(totals.sets[0]);$('final-set2').textContent=number(totals.sets[1]);","$('final-set1').textContent=formatScore(totals.sets[0]);$('final-set2').textContent=formatScore(totals.sets[1]);",'set totals');
-    rep("['最終Stage終了時生存点',number(s.herbSurvival+s.carnSurvival)],['ラン合計得点',number(session.runScore())]","['最終Stage終了時生存点',formatScore(s.herbSurvival+s.carnSurvival)],['ラン合計得点',formatScore(session.runScore())]",'result detail scores');
-    rep("rows.push([`Set${set}合計`,number(session.results.filter(r=>r.set===set).reduce((a,r)=>a+r.score.total,0))]);","rows.push([`Set${set}合計`,formatScore(session.results.filter(r=>r.set===set).reduce((a,r)=>a+r.score.total,0))]);",'result set score');
-    rep("rows.push([`Set${r.set} Stage${r.stage}得点`,number(r.score.total)]);","rows.push([`Set${r.set} Stage${r.stage}得点`,formatScore(r.score.total)]);",'result stage score');
-    rep("$('set-summary').textContent=`Set1完了：${number(session.setScore())}点。通常能力5個を引き継ぎます。`;","$('set-summary').textContent=`Set1完了：${formatScore(session.setScore())}点。通常能力5個を引き継ぎます。`;",'set summary');
-    if(js.includes("score.textContent=r?`${fmt(r.score.total)}点`:current?`${fmt(d.score.total)}点`:'—';"))js=js.replace("score.textContent=r?`${fmt(r.score.total)}点`:current?`${fmt(d.score.total)}点`:'—';","score.textContent=r?`${formatScore(r.score.total)}点`:current?`${formatScore(d.score.total)}点`:'—';");
-
-    const helpers=`function updatePlaybackControls(){\n  const play=$('play-toggle'),cycle=$('speed-cycle');\n  if(play){const available=Boolean(clock)&&!session?.done&&session?.phase==='running';play.disabled=!available;play.textContent=paused?'▶':'⏸';play.setAttribute('aria-label',paused?'再生':'一時停止');play.setAttribute('aria-pressed',String(paused));play.classList.toggle('is-paused',paused);}\n  if(cycle){cycle.textContent=\`${'${speed}'}×\`;cycle.setAttribute('aria-label',\`再生速度 ${'${speed}'}倍\`);}\n}\nfunction setPaused(next){\n  if(!clock||session?.done)return;next=Boolean(next);if(next===paused){updatePlaybackControls();return;}\n  if(next){const changed=clock.advance(performance.now());cancelAnimationFrame(raf);raf=0;paused=true;if(changed)paint();else updatePlaybackControls();if(session.done){paused=false;paint();finish();}}else{paused=false;clock.lastMs=performance.now();updatePlaybackControls();raf=requestAnimationFrame(frame);}\n}\nfunction cycleSpeed(){\n  const values=[1,4,8],next=values[(values.indexOf(speed)+1)%values.length],now=performance.now();if(clock){if(paused)clock.speed=next;else clock.setSpeed(next,now);}speed=next;paint();if(clock&&session.done){cancelAnimationFrame(raf);paused=false;finish();}\n}\n`;
-    rep('function paint(){\n',helpers+'function paint(){\n','playback helpers');
-    rep('function frame(now){if(clock.advance(now))paint();if(session.done){paint();finish();return;}raf=requestAnimationFrame(frame);}',"function frame(now){if(paused||!clock)return;if(clock.advance(now))paint();if(session.done){paint();paused=false;finish();return;}raf=requestAnimationFrame(frame);}",'frame');
-    rep('function runStage(){for(const b of previewButtons)b.setAttribute',"function runStage(){paused=false;for(const b of previewButtons)b.setAttribute",'run stage');
-    rep('function finish(){\n  clock=null;const complete=session.setDone,last=session.results.at(-1);',"function finish(){\n  clock=null;paused=false;updatePlaybackControls();const complete=session.setDone,last=session.results.at(-1);",'finish');
-    rep("  for(const button of document.querySelectorAll('[data-speed]'))button.onclick=()=>{\n    const next=Number(button.dataset.speed);if(clock)clock.setSpeed(next,performance.now());speed=next;paint();\n    if(clock&&session.done){cancelAnimationFrame(raf);finish();}\n  };","  $('play-toggle').onclick=()=>setPaused(!paused);\n  $('speed-cycle').onclick=cycleSpeed;",'playback binding');
-    runtime.textContent=js;
 
     const patch=doc.createElement('script');patch.textContent=`
 (()=>{
