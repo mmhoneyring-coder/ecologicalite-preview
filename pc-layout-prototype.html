@@ -29,23 +29,23 @@ body{min-height:100vh;overflow:auto}
   display:flex;
   align-items:flex-start;
   justify-content:flex-start;
-  padding:54px 28px 30px clamp(28px,4vw,74px);
+  padding:50px 24px 24px clamp(20px,2.3vw,42px);
 }
 .prototype{
   position:relative;
   display:grid;
-  grid-template-columns:210px 660px 250px;
-  gap:12px;
+  grid-template-columns:132px 620px 154px;
+  gap:8px;
   width:max-content;
-  max-width:calc(100vw - 56px);
+  max-width:calc(100vw - 48px);
 }
 .brand{
   position:absolute;
-  right:2px;
-  top:-31px;
-  font-size:11px;
+  right:1px;
+  top:-29px;
+  font-size:10px;
   font-weight:800;
-  letter-spacing:.08em;
+  letter-spacing:.07em;
   color:var(--mint);
   white-space:nowrap;
 }
@@ -54,61 +54,62 @@ body{min-height:100vh;overflow:auto}
   min-height:100%;
   display:flex;
   flex-direction:column;
-  gap:10px;
+  gap:7px;
 }
 .card,.stage,.stats,.graph-card,.ability-card,.hp-card,.controls,.restart{
   border:1px solid var(--line);
   background:linear-gradient(180deg,rgba(20,34,49,.96),rgba(13,24,36,.96));
-  border-radius:10px;
-}
-.stage{padding:10px 12px 11px}
-.eyebrow{color:#71879b;font-size:8px;font-weight:800;letter-spacing:.13em}
-.stage strong{display:block;margin-top:2px;font-size:18px;line-height:1.1}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;background:transparent;border:0}
-.stat{
-  position:relative;
-  height:69px;
-  padding:8px 9px;
-  border:1px solid var(--line);
-  background:var(--panel2);
   border-radius:9px;
 }
-.stat small{display:block;color:#879caf;font-size:8px;font-weight:700}
-.stat b{position:absolute;right:9px;bottom:7px;font-size:23px;line-height:1;font-variant-numeric:tabular-nums}
-.dot{position:absolute;left:9px;bottom:10px;width:18px;height:18px;border-radius:5px;background:var(--plant);box-shadow:0 0 0 1px rgba(255,255,255,.08) inset}
+.stage{padding:8px 9px 9px}
+.eyebrow{color:#71879b;font-size:7px;font-weight:800;letter-spacing:.12em}
+.stage strong{display:block;margin-top:2px;font-size:15px;line-height:1.1;white-space:nowrap}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:0;background:transparent;border:0}
+.stat{
+  position:relative;
+  height:58px;
+  padding:7px 7px;
+  border:1px solid var(--line);
+  background:var(--panel2);
+  border-radius:8px;
+  overflow:hidden;
+}
+.stat small{display:block;color:#879caf;font-size:7px;font-weight:700;white-space:nowrap}
+.stat b{position:absolute;right:7px;bottom:6px;font-size:18px;line-height:1;font-variant-numeric:tabular-nums}
+.dot{position:absolute;left:7px;bottom:8px;width:14px;height:14px;border-radius:4px;background:var(--plant);box-shadow:0 0 0 1px rgba(255,255,255,.08) inset}
 .dot.herb{background:var(--herb);border-radius:50%}
 .dot.carn{background:var(--carn);clip-path:polygon(50% 0,100% 100%,0 100%)}
-.graph-card{margin-top:2px;padding:9px 9px 8px;min-height:205px;display:flex;flex-direction:column}
-.graph-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
-.graph-head strong{font-size:10px}.graph-head span{color:var(--muted);font-size:8px}
+.graph-card{margin-top:1px;padding:8px 7px 7px;min-height:220px;display:flex;flex-direction:column}
+.graph-head{display:flex;align-items:center;justify-content:space-between;gap:5px;margin-bottom:7px}
+.graph-head strong{font-size:8px;white-space:nowrap}.graph-head span{color:var(--muted);font-size:7px;white-space:nowrap}
 .graph{
   position:relative;
   flex:1;
-  min-height:132px;
+  min-height:146px;
   overflow:hidden;
   border:1px solid #24394d;
-  border-radius:7px;
+  border-radius:6px;
   background:
     linear-gradient(to right,transparent 24%,rgba(111,137,160,.11) 25%,transparent 26%,transparent 49%,rgba(111,137,160,.11) 50%,transparent 51%,transparent 74%,rgba(111,137,160,.11) 75%,transparent 76%),
     linear-gradient(to bottom,transparent 24%,rgba(111,137,160,.11) 25%,transparent 26%,transparent 49%,rgba(111,137,160,.11) 50%,transparent 51%,transparent 74%,rgba(111,137,160,.11) 75%,transparent 76%),
     #0a141f;
 }
 .graph svg{position:absolute;inset:0;width:100%;height:100%}
-.graph-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
-button{height:31px;border:1px solid var(--line2);border-radius:8px;background:#152335;color:#d9e5ef;font:inherit;font-size:9px;font-weight:700}
+.graph-actions{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:7px}
+button{height:29px;border:1px solid var(--line2);border-radius:7px;background:#152335;color:#d9e5ef;font:inherit;font-size:8px;font-weight:700;white-space:nowrap}
 .center{display:flex;flex-direction:column;align-self:start}
 .board-shell{
   position:relative;
-  width:660px;
+  width:620px;
   aspect-ratio:28/18;
   overflow:hidden;
   border:1px solid #355068;
-  border-radius:10px;
+  border-radius:9px;
   background:#07131d;
-  box-shadow:0 18px 48px rgba(0,0,0,.25)
+  box-shadow:0 16px 42px rgba(0,0,0,.25)
 }
 .board{
-  position:absolute;inset:7px 32px 7px 7px;
+  position:absolute;inset:7px 30px 7px 7px;
   border:1px solid #284258;
   border-radius:7px;
   overflow:hidden;
@@ -125,34 +126,32 @@ button{height:31px;border:1px solid var(--line2);border-radius:8px;background:#1
     #0b1721;
 }
 .activity{
-  position:absolute;right:8px;top:50%;transform:translateY(-50%);width:16px;height:116px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;color:#728a9d;font-size:7px
+  position:absolute;right:7px;top:50%;transform:translateY(-50%);width:15px;height:108px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;color:#728a9d;font-size:6.5px
 }
 .meter{position:relative;width:7px;flex:1;margin:4px 0;border:1px solid #37506a;border-radius:999px;background:#0d1b29;overflow:hidden}
 .meter::after{content:"";position:absolute;left:0;right:0;bottom:0;height:44%;background:#5ab78e}
-.time{height:28px;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;color:#93a9bb;font-size:9px;font-variant-numeric:tabular-nums}
-.ability-card{padding:10px 10px 9px;min-height:156px}
-.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
-.section-title strong{font-size:10px}.section-title span{font-size:8px;color:var(--muted)}
-.ability{padding:6px 7px;border:1px solid #6b5c2f;border-radius:7px;background:#4f451e;color:#f3dda0;font-size:8px;font-weight:700;margin-bottom:5px}
+.time{height:27px;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;color:#93a9bb;font-size:8.5px;font-variant-numeric:tabular-nums}
+.ability-card{padding:8px 8px 7px;min-height:138px}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:7px;margin-bottom:7px}
+.section-title strong{font-size:9px}.section-title span{font-size:7px;color:var(--muted)}
+.ability{padding:5px 6px;border:1px solid #6b5c2f;border-radius:6px;background:#4f451e;color:#f3dda0;font-size:7px;font-weight:700;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ability.normal{border-color:#36516a;background:#132334;color:#d9e6f0}
-.spacer{flex:1;min-height:26px}
-.hp-card{padding:9px 10px}
-.hp-label{color:var(--muted);font-size:8px;margin-bottom:6px}.hp-row{display:flex;align-items:center;gap:8px}.avatar{width:24px;height:24px;border-radius:50%;background:var(--herb)}
-.hp-main{flex:1;min-width:0}.hp-main strong{display:block;font-size:10px}.hp-bar{height:6px;margin-top:4px;border-radius:999px;background:#213448;overflow:hidden}.hp-bar::after{content:"";display:block;width:68%;height:100%;background:#78c39a}
-.hp-value{font-size:9px;color:#bfd0dc;font-variant-numeric:tabular-nums}
-.controls{display:grid;grid-template-columns:1.35fr .8fr;gap:7px;padding:8px}
-.controls button{height:34px;border-radius:999px}
-.restart{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:8px}
-.restart button{height:34px;border-radius:999px}
-.note{position:fixed;right:14px;bottom:10px;color:#53697d;font-size:8px}
-@media(max-width:1220px){
-  .page{padding-left:22px;padding-right:22px}
-  .prototype{grid-template-columns:190px 600px 230px;gap:10px}
-  .board-shell{width:600px}
+.spacer{flex:1;min-height:20px}
+.hp-card{padding:8px 8px}
+.hp-label{color:var(--muted);font-size:7px;margin-bottom:5px}.hp-row{display:flex;align-items:center;gap:6px}.avatar{width:20px;height:20px;border-radius:50%;background:var(--herb);flex:0 0 auto}
+.hp-main{flex:1;min-width:0}.hp-main strong{display:block;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.hp-bar{height:5px;margin-top:4px;border-radius:999px;background:#213448;overflow:hidden}.hp-bar::after{content:"";display:block;width:68%;height:100%;background:#78c39a}
+.hp-value{font-size:7px;color:#bfd0dc;font-variant-numeric:tabular-nums;white-space:nowrap}
+.controls{display:grid;grid-template-columns:1.35fr .8fr;gap:5px;padding:6px}
+.controls button{height:31px;border-radius:999px}
+.restart{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:6px}
+.restart button{height:31px;border-radius:999px;font-size:7.5px}
+.note{position:fixed;right:12px;bottom:9px;color:#53697d;font-size:7px}
+@media(max-width:1010px){
+  .page{padding-left:16px;padding-right:16px}
+  .prototype{transform-origin:top left;transform:scale(.92)}
 }
-@media(max-width:1080px){
-  .page{align-items:flex-start;overflow:auto}
-  .prototype{transform-origin:top left;transform:scale(.9)}
+@media(max-width:900px){
+  .prototype{transform:scale(.82)}
 }
 </style>
 </head>
@@ -171,7 +170,7 @@ button{height:31px;border:1px solid var(--line2);border-radius:8px;background:#1
         <div class="stat"><small>植物</small><span class="dot"></span><b>96</b></div>
         <div class="stat"><small>草食</small><span class="dot herb"></span><b>18</b></div>
         <div class="stat"><small>肉食</small><span class="dot carn"></span><b>4</b></div>
-        <div class="stat"><small>得点 · SET 1</small><b>1,284</b></div>
+        <div class="stat"><small>得点</small><b>1,284</b></div>
       </section>
 
       <section class="graph-card">
@@ -208,7 +207,7 @@ button{height:31px;border:1px solid var(--line2);border-radius:8px;background:#1
         <div class="hp-row">
           <span class="avatar"></span>
           <div class="hp-main"><strong>草食 #H-021</strong><div class="hp-bar"></div></div>
-          <span class="hp-value">122 / 180</span>
+          <span class="hp-value">122/180</span>
         </div>
       </section>
 
