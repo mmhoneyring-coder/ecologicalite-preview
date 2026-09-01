@@ -69,8 +69,12 @@
     if(!d.getElementById('ui-v15-style')){const style=d.createElement('style');style.id='ui-v15-style';style.textContent=css;d.head.append(style);}
     installInfo(d);
     updateHp(d);
-    const hp=d.getElementById('animal-hp');
-    if(hp&&!hp.dataset.uiV15Observed){hp.dataset.uiV15Observed='1';new d.defaultView.MutationObserver(()=>updateHp(d)).observe(hp,{subtree:true,childList:true,characterData:true,attributes:true});}
+    const hp=d.getElementById('animal-hp'),species=d.getElementById('animal-species'),values=d.getElementById('animal-hp-values');
+    if(hp&&!hp.dataset.uiV15Observed){
+      hp.dataset.uiV15Observed='1';
+      if(species)new d.defaultView.MutationObserver(()=>updateHp(d)).observe(species,{attributes:true,attributeFilter:['class']});
+      if(values)new d.defaultView.MutationObserver(()=>updateHp(d)).observe(values,{subtree:true,childList:true,characterData:true});
+    }
     setMobileLayout(d,mobile.matches);
     installedDoc=d;
     return true;
@@ -78,7 +82,7 @@
 
   function apply(){let d;try{d=frame.contentDocument;}catch(_){return false;}if(!d)return false;if(d!==installedDoc){layoutState=null;return install(d);}installInfo(d);updateHp(d);setMobileLayout(d,mobile.matches);return true;}
   function wait(){if(waitTimer)clearInterval(waitTimer);let tries=0;waitTimer=setInterval(()=>{tries++;if(apply()||tries>=150){clearInterval(waitTimer);waitTimer=null;}},100);}
-  frame.addEventListener('load',()=>setTimeout(wait,50));
-  mobile.addEventListener?.('change',()=>apply());
+  frame.addEventListener('load',()=>assets.then(ok=>{if(ok)setTimeout(wait,50);}));
+  mobile.addEventListener?.('change',()=>assets.then(ok=>{if(ok)apply();}));
   assets.then(ok=>{if(ok)wait();});
 })();
