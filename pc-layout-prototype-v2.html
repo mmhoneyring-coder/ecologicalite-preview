@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>EcologicaLite PC layout prototype v2</title>
+<style>
+:root{color-scheme:dark;--bg:#081018;--panel:#101a27;--line:#2b3c50;--text:#edf4fb;--muted:#9dafc2;--mint:#99d9bf;--gold:#efd17e}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}button{font:inherit;color:inherit}
+.page{min-height:100vh;padding:52px 28px 28px;display:flex;justify-content:center;align-items:flex-start}.app{position:relative;width:min(1180px,calc(100vw - 56px));display:grid;grid-template-columns:190px minmax(600px,1fr) 190px;gap:10px}.brand{position:absolute;right:0;top:-34px;border:0;background:transparent;color:#94d5bd;font-size:12px;font-weight:800;letter-spacing:.08em;cursor:pointer}
+.rail{height:500px;min-width:0;display:flex;flex-direction:column;gap:8px}.center{height:500px;min-width:0;display:flex;flex-direction:column}.panel{border:1px solid var(--line);border-radius:11px;background:var(--panel)}
+.stage{padding:2px 1px}.stage span{display:block;margin-bottom:4px;color:#a9d8c8;font-size:9px;font-weight:750;letter-spacing:.09em}.stage strong{font-size:20px;letter-spacing:.035em}.stage small{margin-left:4px;color:#8296aa;font-size:11px}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:5px}.card{--card:#342d18;--edge:#8b7740;--accent:#ffe08b;position:relative;height:58px;padding:7px 8px;border:1px solid var(--edge);border-radius:10px;background:var(--card);box-shadow:inset 0 3px 0 var(--accent);overflow:hidden}.card.plant{--card:#15301f;--edge:#4f7d55;--accent:#b8e792}.card.herb{--card:#19304a;--edge:#4f79aa;--accent:#a5d3ff}.card.carn{--card:#3a202a;--edge:#955769;--accent:#ffb4be}.card .label{font-size:9px;color:var(--accent);font-weight:700}.card .ico{position:absolute;left:8px;bottom:10px;width:24px;height:24px;background-size:contain;background-repeat:no-repeat;background-position:center;image-rendering:pixelated}.card .num{position:absolute;right:8px;bottom:9px;color:var(--accent);font-size:23px;line-height:1;font-weight:750}.plant .ico{background-image:var(--plant-img)}.herb .ico{background-image:var(--herb-img)}.carn .ico{background-image:var(--carn-img)}
+.graph-panel{flex:1;min-height:0;padding:8px;display:grid;grid-template-rows:auto minmax(0,1fr) auto}.panelhead{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:5px}.panelhead strong{font-size:10px;color:var(--gold)}.panelhead span{font-size:8px;color:var(--muted)}.graph-wrap{position:relative;min-height:0;border-radius:8px;background:#0b111a;overflow:hidden}.graph-wrap::before{content:"";position:absolute;inset:0;background:linear-gradient(to bottom,transparent 24%,rgba(43,60,80,.7) 25%,transparent 26%,transparent 49%,rgba(43,60,80,.7) 50%,transparent 51%,transparent 74%,rgba(43,60,80,.7) 75%,transparent 76%)}.graph{position:absolute;inset:0;width:100%;height:100%}.graph-actions{display:flex;gap:5px;margin-top:7px}.pill{height:28px;padding:0 12px;border:1px solid #40566f;border-radius:999px;background:#152335;color:#cdd9e6;font-size:9px}
+.board-shell{position:relative;flex:0 0 auto;width:100%;aspect-ratio:32/20;border:1px solid #3b485a;border-radius:11px;background:#04070b;overflow:hidden}.board-shell canvas{display:block;width:100%;height:100%;image-rendering:pixelated}.activity{position:absolute;right:7px;top:68%;transform:translateY(-50%);width:17px;display:flex;align-items:center;justify-content:center}.meter{position:relative;width:8px;height:66px;border:1px solid #73988b;border-radius:3px;background:rgba(4,10,14,.35);overflow:hidden}.meter i{position:absolute;left:0;right:0;bottom:0;height:42%;background:var(--mint)}.time{padding:7px 2px 0;text-align:right;color:#aebdce;font-size:12px}
+.ability-panel{flex:1;min-height:0;padding:7px;display:grid;grid-template-rows:auto minmax(0,1fr)}.ability-head{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:5px}.ability-head strong{font-size:10px}.ability-head span{font-size:8px;color:var(--muted)}.ability-list{display:grid;grid-template-rows:repeat(12,minmax(0,1fr));gap:3px;min-height:0}.ability-item{min-height:0;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:5px;padding:0 6px;border:1px solid #40566f;border-radius:6px;background:#152335;color:#cbd7e4;font-size:7.5px;outline:none}.ability-item.set{background:#5b4d20;border-color:#bda35b;color:#ffe89b}.ability-item .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ability-item .stack{color:#6f8193;font-size:6.5px}.ability-item.set .stack{color:#cdbf8f}.ability-item:hover::after,.ability-item:focus::after{content:attr(data-tip);position:fixed;z-index:50;width:200px;padding:8px 9px;border:1px solid #617892;border-radius:8px;background:#101a27;color:#edf4fb;font-size:9px;line-height:1.4;white-space:normal;box-shadow:0 10px 28px rgba(0,0,0,.45);transform:translate(-165px,-44px);pointer-events:none}
+.hp-wrap,.play-wrap{display:grid;grid-template-rows:auto 1fr;gap:4px}.hp-head,.play-head{margin-left:2px;color:var(--muted);font-size:9px}.hp-compact{height:58px;padding:6px 8px;display:grid;grid-template-columns:30px minmax(0,1fr);grid-template-rows:auto 8px;column-gap:8px;row-gap:5px;align-items:center}.hp-species{grid-column:1;grid-row:1/3;width:28px;height:28px;background:var(--herb-img) center/contain no-repeat;image-rendering:pixelated}.hp-id{grid-column:2;grid-row:1;justify-self:start;font-size:10px;font-weight:750}.hp-value{grid-column:2;grid-row:1;justify-self:end;color:#cbd7e4;font-size:9px;font-style:normal}.hp-bar{grid-column:2;grid-row:2;position:relative;width:100%;height:8px;border:1px solid #40566f;border-radius:999px;background:#0b141e;overflow:hidden}.hp-bar i{position:absolute;inset:0 auto 0 0;width:68%;background:var(--mint);border-radius:inherit}
+.playback-compact{height:44px;display:grid;grid-template-columns:1.15fr .85fr;gap:5px}.playback-compact button{border:1px solid #40566f;border-radius:9px;background:#17263a;color:#e8f0f7;font-size:16px;font-weight:750}.playback-compact button:last-child{font-size:12px}.bottom-runtime-actions{height:40px;display:grid;grid-template-columns:1fr 1fr;gap:5px}.bottom-runtime-actions button{border:1px solid #40566f;border-radius:999px;background:#152335;color:#cdd9e6;font-size:8.5px}
+.info-overlay{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(3,8,13,.82);backdrop-filter:blur(4px)}.info-overlay[hidden]{display:none}.info-card{width:min(760px,100%);max-height:90vh;padding:10px;border:1px solid #526a83;border-radius:13px;background:#101a27;overflow:auto}.info-head{position:sticky;top:-10px;z-index:2;display:flex;justify-content:space-between;align-items:center;margin:-10px -10px 8px;padding:10px;border-bottom:1px solid #293c50;background:rgba(16,26,39,.98)}.info-head strong{font-size:18px}.info-head button{height:30px;padding:0 12px;border:1px solid #40566f;border-radius:999px;background:#17263a;color:#e4eef7;font-size:9px}
+@media(max-width:1100px){.page{padding-left:14px;padding-right:14px}.app{width:100%;grid-template-columns:170px minmax(540px,1fr) 170px;transform-origin:top left}}@media(max-width:940px){.app{transform:scale(.88);width:max-content}}
+</style>
+</head>
+<body>
+<div class="page"><main class="app" aria-label="PC layout shared UI prototype">
+<button id="brand" class="brand" type="button">EcologicaLite</button>
+<aside class="rail left">
+<section class="stage"><span>SET 2 / 2</span><strong>STAGE 06 <small>/ 06</small></strong></section>
+<section class="cards">
+<div class="card plant"><span class="label">植物</span><i class="ico"></i><b class="num">118</b></div>
+<div class="card herb"><span class="label">草食</span><i class="ico"></i><b class="num">26</b></div>
+<div class="card carn"><span class="label">肉食</span><i class="ico"></i><b class="num">5</b></div>
+<div class="card score"><span class="label">得点 <small style="color:#8396aa;font-size:6px">SET 2</small></span><b class="num">4,382</b></div>
+</section>
+<section class="panel graph-panel"><div class="panelhead"><strong>SET 2 · 累計得点</strong><span>6 / 6</span></div><div class="graph-wrap"><svg class="graph" viewBox="0 0 140 230" preserveAspectRatio="none"><path d="M5 213 L27 189 L49 158 L71 122 L93 88 L115 61 L135 34 L135 224 L5 224 Z" fill="#efd17e" opacity=".08"/><polyline points="5,213 27,189 49,158 71,122 93,88 115,61 135,34" fill="none" stroke="#efd17e" stroke-width="2"/><circle cx="135" cy="34" r="4" fill="#fff0b9" stroke="#efd17e" stroke-width="2"/></svg></div><div class="graph-actions"><button class="pill" type="button">詳細</button><button class="pill" type="button">コピー</button></div></section>
+</aside>
+<section class="center"><div class="board-shell"><canvas id="field"></canvas><div class="activity"><div class="meter"><i></i></div></div></div><div class="time">13.8 / 25.0秒</div></section>
+<aside class="rail right">
+<section class="panel ability-panel"><div class="ability-head"><strong>取得能力</strong><span>12</span></div><div class="ability-list">
+<div class="ability-item set" tabindex="0" data-tip="各SetのStage1〜6で＋1〜＋6秒。"><span class="name">時間延長</span><span class="stack">SET</span></div>
+<div class="ability-item" tabindex="0" data-tip="植物を食べたときのHP回復量を増やす。"><span class="name">草食摂食時HP回復+2</span><span class="stack">1/3</span></div>
+<div class="ability-item" tabindex="0" data-tip="植物摂食に関する得点を増やす。"><span class="name">摂食得点アップ</span><span class="stack">1/3</span></div>
+<div class="ability-item" tabindex="0" data-tip="繁殖時に生まれる子のHPを増やす。"><span class="name">草食の子HP+10</span><span class="stack">1/3</span></div>
+<div class="ability-item" tabindex="0" data-tip="繁殖に関する得点を増やす。"><span class="name">繁殖得点アップ</span><span class="stack">2/3</span></div>
+<div class="ability-item" tabindex="0" data-tip="Stage終了時の生存得点を増やす。"><span class="name">生存得点アップ</span><span class="stack">1/3</span></div>
+<div class="ability-item set" tabindex="0" data-tip="HP65%以上の草食が近くの肉食から70%で離れる。"><span class="name">危険察知</span><span class="stack">SET</span></div>
+<div class="ability-item" tabindex="0" data-tip="捕食時のHP回復量を増やす。"><span class="name">肉食捕食時HP回復+10</span><span class="stack">1/3</span></div>
+<div class="ability-item" tabindex="0" data-tip="繁殖時に生まれる子のHPを増やす。"><span class="name">肉食の子HP+15</span><span class="stack">1/3</span></div>
+<div class="ability-item" tabindex="0" data-tip="肉食に関する得点を増やす。"><span class="name">肉食系得点アップ</span><span class="stack">1/3</span></div>
+<div class="ability-item" tabindex="0" data-tip="取得時に植物を追加する。"><span class="name">植物+12</span><span class="stack">1/3</span></div>
+<div class="ability-item" tabindex="0" data-tip="活動植物生成に必要なポイントを減らす。"><span class="name">活動植物生成 必要pt-1</span><span class="stack">1/3</span></div>
+</div></section>
+<section class="hp-wrap"><div class="hp-head">選択中の個体</div><div class="panel hp-compact"><i class="hp-species"></i><strong class="hp-id">H-021</strong><em class="hp-value">122 / 180</em><span class="hp-bar"><i></i></span></div></section>
+<section class="play-wrap"><div class="play-head">再生</div><div class="playback-compact"><button type="button">⏸</button><button type="button">1×</button></div></section>
+<section class="bottom-runtime-actions"><button type="button">やり直し</button><button type="button">最初から</button></section>
+</aside>
+</main></div>
+<div id="info-overlay" class="info-overlay" hidden><div class="info-card"><div class="info-head"><strong>EcologicaLite</strong><button id="info-close" type="button">閉じる</button></div><div id="info-content"></div></div></div>
+<script>
+(async()=>{
+ const COLS=32,ROWS=20,SCALES={plant:1.2,herb:1.4,carn:1.8};
+ try{
+  const [raw,info]=await Promise.all([fetch('./base.html',{cache:'no-store'}).then(r=>r.text()),fetch('./game-info-v19.html?v=19',{cache:'no-store'}).then(r=>r.text())]);
+  document.getElementById('info-content').innerHTML=info;
+  const m=raw.match(/const assetSources=(\{[\s\S]*?\});/);if(!m)throw Error('assetSources');const assets=JSON.parse(m[1]),root=document.documentElement;
+  root.style.setProperty('--plant-img',`url("${assets.plant}")`);root.style.setProperty('--herb-img',`url("${assets.herb}")`);root.style.setProperty('--carn-img',`url("${assets.carn}")`);
+  const images={};await Promise.all(['plant','herb','carn'].map(k=>new Promise((ok,ng)=>{const im=new Image();im.onload=()=>{images[k]=im;ok()};im.onerror=ng;im.src=assets[k]})));draw(images);
+ }catch(e){drawFallback();console.error(e)}
+ const overlay=document.getElementById('info-overlay');document.getElementById('brand').onclick=()=>overlay.hidden=false;document.getElementById('info-close').onclick=()=>overlay.hidden=true;window.addEventListener('keydown',e=>{if(e.key==='Escape')overlay.hidden=true});
+ function slots(n,state,used){const out=[];let s=state>>>0;while(out.length<n){s=(Math.imul(1664525,s)+1013904223)>>>0;const x=s%COLS;s=(Math.imul(1664525,s)+1013904223)>>>0;const y=s%ROWS,key=x+','+y;if(used.has(key))continue;used.add(key);out.push({x,y})}return out}
+ function spriteRect(p,type,images,scale,cell){const im=images[type],base=cell*scale,ratio=im.width/im.height,w=ratio>=1?base:base*ratio,h=ratio>=1?base/ratio:base;return{x:Math.round((p.x+.5)*cell-w/2),y:Math.round((p.y+.5)*cell-h/2),w:Math.max(1,Math.round(w)),h:Math.max(1,Math.round(h))}}
+ function setup(){const canvas=document.getElementById('field'),cssW=canvas.clientWidth||720,cssH=cssW*ROWS/COLS,dpr=Math.min(2,devicePixelRatio||1);canvas.width=Math.round(cssW*dpr);canvas.height=Math.round(cssH*dpr);const ctx=canvas.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false;ctx.fillStyle='#04070b';ctx.fillRect(0,0,cssW,cssH);const cell=Math.min(cssW/COLS,cssH/ROWS);ctx.strokeStyle='rgba(150,170,195,.07)';ctx.lineWidth=1;for(let x=1;x<COLS;x++){const p=Math.round(x*cell)+.5;ctx.beginPath();ctx.moveTo(p,0);ctx.lineTo(p,ROWS*cell);ctx.stroke()}for(let y=1;y<ROWS;y++){const p=Math.round(y*cell)+.5;ctx.beginPath();ctx.moveTo(0,p);ctx.lineTo(COLS*cell,p);ctx.stroke()}return{ctx,cell}}
+ function draw(images){const{ctx,cell}=setup(),used=new Set(),plants=slots(118,0x72ab31,used),herbs=slots(26,0x922cd1,used),carns=slots(5,0x2134fa,used);for(const p of plants){const r=spriteRect(p,'plant',images,SCALES.plant,cell);ctx.drawImage(images.plant,r.x,r.y,r.w,r.h)}for(const p of herbs){const r=spriteRect(p,'herb',images,SCALES.herb,cell);ctx.drawImage(images.herb,r.x,r.y,r.w,r.h)}for(const p of carns){const r=spriteRect(p,'carn',images,SCALES.carn,cell);ctx.drawImage(images.carn,r.x,r.y,r.w,r.h)}}
+ function drawFallback(){const{ctx,cell}=setup(),used=new Set();for(const [n,state,color,scale] of [[118,0x72ab31,'#a4d485',1.2],[26,0x922cd1,'#80b9ff',1.4],[5,0x2134fa,'#ff9292',1.8]]){ctx.fillStyle=color;for(const p of slots(n,state,used)){const s=cell*scale;ctx.fillRect((p.x+.5)*cell-s/2,(p.y+.5)*cell-s/2,s,s)}}}
+})();
+</script>
+</body>
+</html>
