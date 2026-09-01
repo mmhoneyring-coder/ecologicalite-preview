@@ -11,11 +11,12 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#081018}
 </style>
 </head>
 <body>
-<iframe id="app" title="EcologicaLite" src="./preview.html?v=ui-copy-v9"></iframe>
+<iframe id="app" title="EcologicaLite" src="./preview.html?v=ui-batch-v10"></iframe>
 <script>
 (()=>{
   const frame=document.getElementById('app');
   let installedDoc=null,observer=null;
+  const int=n=>Math.round(Number(n)||0).toLocaleString('ja-JP');
   function contextLabel(d,el,label,context=''){
     if(!el)return;
     const first=el.firstChild&&el.firstChild.nodeType===3?el.firstChild.textContent:'';
@@ -32,18 +33,53 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#081018}
       installedDoc=d;
       if(observer)observer.disconnect();
       const style=d.createElement('style');
-      style.id='root-v9-fixes';
+      style.id='root-v10-fixes';
       style.textContent=`
         .ui-context{margin-left:5px;color:#8396aa;font-size:.62em;font-weight:700;letter-spacing:.08em;white-space:nowrap}
         .compact-score-label{font-size:0!important}.compact-score-label::before{content:'得点';font-size:9px}.compact-score-label::after{content:attr(data-context);margin-left:4px;color:#8396aa;font-size:6px;font-weight:700;letter-spacing:.08em}
         #set-summary.ui-score-summary{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:4px 0 6px!important}#set-summary.ui-score-summary strong{color:#e8d089;font-size:13px}
+        .selection-stage{margin:1px 0 1px;color:#edf4fb;font-size:13px;font-weight:800;letter-spacing:.05em;line-height:1.15}
+        #selection>.overlay-stage,#normal-selection>.overlay-stage,#second-set-selection>.overlay-stage{margin-bottom:2px!important;color:#e8d089!important;font-size:8.5px!important;letter-spacing:.13em!important}
+        #selection>h2,#normal-selection>h2,#second-set-selection>h2{margin:0 0 5px!important;font-size:12px!important;line-height:1.25!important}
+        #choices .choice,#second-set-choices .choice{background:#5b4d20!important;border-color:#bda35b!important;box-shadow:inset 0 1px 0 rgba(255,232,155,.2)!important}
+        #choices .choice strong,#second-set-choices .choice strong{color:#ffe89b!important}
+        #choices .choice span,#second-set-choices .choice span{color:#eadca7!important}
+        #choices .choice em,#second-set-choices .choice em{display:none!important}
+        #normal-choices .choice.ui-normal-choice{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;column-gap:8px!important;row-gap:3px!important;align-items:baseline!important}
+        #normal-choices .choice.ui-normal-choice strong{grid-column:1;grid-row:1;min-width:0;margin:0!important;white-space:normal}
+        #normal-choices .choice.ui-normal-choice .choice-effect{grid-column:2;grid-row:1;color:#e8d089!important;font-size:9px!important;font-weight:750;line-height:1.1;text-align:right;white-space:nowrap}
+        #normal-choices .choice.ui-normal-choice .choice-desc{grid-column:1 / -1;grid-row:2;color:#9eafc0!important;font-size:7.8px!important;line-height:1.35}
+        .bottom-runtime-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;padding-top:9px!important}
+        .bottom-runtime-actions button{width:100%!important;min-width:0!important;height:34px!important;margin:0!important;padding:0 9px!important;border-radius:999px!important;font-size:10px!important;order:initial!important}
+        .bottom-runtime-actions #back[hidden]+#new-run{grid-column:1 / -1}
         .board-shell{position:relative!important}
         .legacy-result-panel.result-overlay-panel{position:absolute!important;inset:8px!important;z-index:80!important;display:flex!important;align-items:center!important;justify-content:center!important;margin:0!important;padding:8px!important;border:0!important;border-radius:12px!important;background:rgba(3,8,13,.42)!important;backdrop-filter:blur(1.6px);-webkit-backdrop-filter:blur(1.6px)}
         .legacy-result-panel.result-overlay-panel[hidden]{display:none!important}
         .legacy-result-panel.result-overlay-panel .result-card{width:min(100%,420px);max-height:100%;overflow:auto;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(13,22,32,.96);box-shadow:0 16px 40px rgba(0,0,0,.35)}
         .legacy-result-panel.result-overlay-panel h2{margin:0 0 7px;font-size:17px;line-height:1.25}
         .legacy-result-panel.result-overlay-panel .result-score strong{font-size:30px}
-        @media(max-width:390px){.legacy-result-panel.result-overlay-panel{inset:6px!important;padding:6px!important}.legacy-result-panel.result-overlay-panel .result-card{padding:10px}.legacy-result-panel.result-overlay-panel h2{font-size:16px}}
+        #replay{display:none!important}
+        #result-details.result-detail-groups{display:block!important;margin:7px 0 2px!important;font-size:9px!important}
+        .result-detail-group{padding:8px 0 2px;border-top:1px solid rgba(93,117,141,.32)}
+        .result-detail-group:first-child{border-top:0;padding-top:2px}
+        .result-detail-group>h3{margin:0 0 6px;color:#edf4fb;font-size:11px;font-weight:800;letter-spacing:.04em}
+        .result-detail-sub{padding:6px 0 2px;border-top:1px solid rgba(93,117,141,.22)}
+        .result-detail-sub:first-of-type{border-top:0;padding-top:0}
+        .result-detail-sub>h4{margin:0 0 4px;color:#a9d8c8;font-size:9px;font-weight:750;letter-spacing:.05em}
+        .detail-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:2px 0}
+        .detail-row span{color:#8fa2b5}.detail-row strong{color:#e3edf6;font-weight:650;text-align:right;font-variant-numeric:tabular-nums}
+        .stage-set-block{padding:5px 0 1px;border-top:1px solid rgba(93,117,141,.18)}.stage-set-block:first-of-type{border-top:0}
+        .stage-set-head{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 3px;color:#e8d089;font-size:8.5px;font-weight:750;letter-spacing:.05em}
+        #graph-detail-overlay{padding:5px!important;background:rgba(3,7,11,.42)!important}
+        #graph-detail-overlay .graph-detail-card{width:min(94%,320px)!important;max-height:96%!important;height:auto!important;padding:7px!important;background:rgba(14,22,32,.84)!important}
+        .graph-detail-content .stage-detail-list{display:grid;gap:6px}
+        .graph-detail-content .stage-detail-item{padding:7px;border:1px solid #2d4257;border-radius:8px;background:rgba(13,24,36,.88)}
+        .graph-detail-content .stage-detail-title{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:5px}.graph-detail-content .stage-detail-title strong{font-size:9px;color:#e8d089}.graph-detail-content .stage-detail-title span{font-size:9px;font-weight:750;color:#e9f1f8}
+        .graph-detail-content .stage-detail-sub{padding-top:4px;margin-top:4px;border-top:1px solid rgba(93,117,141,.22)}.graph-detail-content .stage-detail-sub:first-of-type{padding-top:0;margin-top:0;border-top:0}
+        .graph-detail-content .stage-detail-sub h5{margin:0 0 3px;color:#a9d8c8;font-size:7.5px;font-weight:750;letter-spacing:.04em}
+        .graph-detail-content .stage-detail-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 7px}.graph-detail-content .stage-detail-grid span{color:#8195a9;font-size:7.5px}.graph-detail-content .stage-detail-grid b{color:#d9e4ef;font-size:7.5px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+        .graph-detail-empty{padding:14px 8px;color:#8fa2b5;font-size:9px;text-align:center}
+        @media(max-width:390px){.legacy-result-panel.result-overlay-panel{inset:6px!important;padding:6px!important}.legacy-result-panel.result-overlay-panel .result-card{padding:10px}.legacy-result-panel.result-overlay-panel h2{font-size:16px}.selection-stage{font-size:12px}#normal-choices .choice.ui-normal-choice .choice-effect{font-size:8.5px!important}.bottom-runtime-actions button{height:32px!important}}
       `;
       d.head.appendChild(style);
       const board=d.querySelector('.board-shell'),result=d.getElementById('result');
@@ -61,29 +97,80 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#081018}
     const c=d.defaultView.getComputedStyle(items[0]);
     for(const [p,v] of [['background',c.background],['border-color',c.borderTopColor],['color',c.color],['box-shadow',c.boxShadow]])items[1].style.setProperty(p,v,'important');
   }
-  function compactDetails(d){
-    d.querySelectorAll('#result-details dt').forEach(dt=>{
-      const t=dt.textContent.trim();let m;
-      if(t==='最終Stage終了時生存点')dt.textContent='生存点';
-      else if(t==='ラン合計得点')contextLabel(d,dt,'得点','TOTAL');
-      else if((m=t.match(/^Set([12])合計$/)))contextLabel(d,dt,'得点','SET '+m[1]);
-      else if((m=t.match(/^Set([12]) Stage(\d+)得点$/)))contextLabel(d,dt,'STAGE '+m[2],'SET '+m[1]);
-      else if(t==='草食自然死 / 捕食死')dt.textContent='草食死亡（自然 / 捕食）';
-      else if(t==='活動 / 死体由来植物')dt.textContent='植物生成（活動 / 死体）';
+  function ensureSelectionHeading(d,section,kind,stage){
+    if(!section)return;
+    const kindEl=section.querySelector(':scope > .overlay-stage');if(kindEl&&kindEl.textContent!==kind)kindEl.textContent=kind;
+    let st=section.querySelector(':scope > .selection-stage');if(!st){st=d.createElement('div');st.className='selection-stage';if(kindEl)kindEl.after(st);else section.prepend(st);}st.textContent='STAGE '+stage;
+    const h=section.querySelector(':scope > h2');if(h&&h.textContent!=='能力を選択')h.textContent='能力を選択';
+  }
+  function normalCardText(name,a,value){
+    let display=name,effect='';
+    if(a?.kind==='score'){effect='+'+Math.round(Number(value||0)*100)+'%';}
+    else if(/必要pt-\d+/i.test(name)){const m=name.match(/必要pt-(\d+)/i);effect='必要pt−'+m[1];display=name.replace(/\s*必要pt-\d+/i,'').trim();}
+    else{const m=name.match(/[+-]\d+(?:\.\d+)?/);if(m){effect=m[0];display=name.replace(m[0],'').replace(/\s{2,}/g,' ').trim();}}
+    let desc='取得すると効果が加算される。';
+    if(a?.kind==='score'){const x=name.replace(/得点アップ$/,'').trim();desc=(x||'対象')+'に関する得点を増やす。';}
+    else if(/子HP/.test(name))desc='繁殖時に生まれる子のHPを増やす。';
+    else if(/捕食時HP回復/.test(name))desc='捕食したときのHP回復量を増やす。';
+    else if(/草食回復/.test(name))desc='植物を食べたときのHP回復量を増やす。';
+    else if(/活動植物生成/.test(name))desc='植物生成に必要な活動値を減らす。';
+    else if(/一時投入/.test(name))desc='取得時に一度だけ個体を追加する。';
+    return {display,effect,desc};
+  }
+  function formatNormalChoices(d,s){
+    if(!s)return;
+    d.querySelectorAll('#normal-choices .choice[data-ability]').forEach(btn=>{
+      const id=btn.dataset.ability,a=s.engine.NORMAL_ABILITIES[id];if(!a)return;
+      const n=(s.state.normalStacks[id]||0)+1,cap=s.engine.values.normalStackCap,val=s.engine.values.normal[id],t=normalCardText(a.name,a,val);
+      const sig=[id,n,t.display,t.effect,t.desc].join('|');if(btn.dataset.uiSig===sig)return;
+      let strong=btn.querySelector('strong');if(!strong){strong=d.createElement('strong');btn.prepend(strong);}strong.textContent=t.display;
+      let effect=btn.querySelector('.choice-effect');if(!effect){effect=d.createElement('span');effect.className='choice-effect';btn.append(effect);}effect.textContent=(t.effect?t.effect+' · ':'')+n+'/'+cap;
+      let desc=btn.querySelector('.choice-desc');if(!desc){desc=d.createElement('span');desc.className='choice-desc';btn.append(desc);}desc.textContent=t.desc;
+      btn.querySelectorAll(':scope > span:not(.choice-effect):not(.choice-desc)').forEach(x=>x.remove());
+      btn.classList.add('ui-normal-choice');btn.dataset.uiSig=sig;
     });
+  }
+  function addRow(d,parent,label,value){const row=d.createElement('div');row.className='detail-row';const l=d.createElement('span'),v=d.createElement('strong');l.textContent=label;v.textContent=value;row.append(l,v);parent.append(row);}
+  function addSub(d,parent,title,rows){const sub=d.createElement('div');sub.className='result-detail-sub';const h=d.createElement('h4');h.textContent=title;sub.append(h);for(const [k,v] of rows)addRow(d,sub,k,v);parent.append(sub);return sub;}
+  function sumEvent(results,key){return results.reduce((n,r)=>n+Number(r.events?.[key]||0),0);}
+  function sumComp(results,key){return results.reduce((n,r)=>n+Number(r.score?.components?.[key]||0),0);}
+  function buildResultDetails(d,s){
+    const root=d.getElementById('result-details');if(!root||!s||!s.runDone)return;
+    const sig='run:'+s.results.length+':'+int(s.runScore());if(root.dataset.groupSig===sig)return;root.dataset.groupSig=sig;root.className='result-detail-groups';root.replaceChildren();
+    const results=s.results;
+    const eco=d.createElement('section');eco.className='result-detail-group';const eh=d.createElement('h3');eh.textContent='生態系';eco.append(eh);
+    addSub(d,eco,'循環',[["植物摂食",int(sumEvent(results,'plantEaten'))],["捕食",int(sumEvent(results,'herbEaten'))]]);
+    addSub(d,eco,'出生・死亡',[["草食出生",int(sumEvent(results,'herbBirths'))],["肉食出生",int(sumEvent(results,'carnBirths'))],["草食死亡",`自然 ${int(sumEvent(results,'herbNaturalDeaths'))} / 捕食 ${int(sumEvent(results,'herbEaten'))}`],["肉食死亡",int(sumEvent(results,'carnNaturalDeaths'))]]);
+    addSub(d,eco,'植物生成',[["活動",int(sumEvent(results,'activityPlantsCreated'))],["死体",int(sumEvent(results,'corpsePlantsCreated'))],["周期・再生",int(sumEvent(results,'lifecycleSeedsCreated')+sumEvent(results,'plantRegrown')+sumEvent(results,'eatenPlantDormancyRegrow'))],["能力",int(sumEvent(results,'oneShotPlantsCreated'))]]);
+    const last=results.at(-1);addSub(d,eco,'活動',[["獲得",int(results.reduce((n,r)=>n+Number(r.activity?.earned||0),0))],["消費",int(results.reduce((n,r)=>n+Number(r.activity?.spent||0),0))],["終了時",int(last?.activity?.end||0)]]);root.append(eco);
+    const score=d.createElement('section');score.className='result-detail-group';const sh=d.createElement('h3');sh.textContent='得点';score.append(sh);
+    addSub(d,score,'内訳',[["植物摂食",int(sumComp(results,'herbFeed'))],["捕食",int(sumComp(results,'carnPred'))],["草食出生",int(sumComp(results,'herbBirth'))],["肉食出生",int(sumComp(results,'carnBirth'))],["草食生存",int(sumComp(results,'herbSurvival'))],["肉食生存",int(sumComp(results,'carnSurvival'))]]);
+    const stageSub=d.createElement('div');stageSub.className='result-detail-sub';const h4=d.createElement('h4');h4.textContent='STAGE別';stageSub.append(h4);
+    for(let set=1;set<=2;set++){const block=d.createElement('div');block.className='stage-set-block';const head=d.createElement('div');head.className='stage-set-head';const a=d.createElement('span'),b=d.createElement('span');a.textContent='SET '+set;const setRows=results.filter(r=>r.set===set);b.textContent=int(setRows.reduce((n,r)=>n+Number(r.score?.total||0),0));head.append(a,b);block.append(head);for(const r of setRows)addRow(d,block,'STAGE '+r.stage,int(r.score?.total||0));stageSub.append(block);}score.append(stageSub);root.append(score);
+  }
+  function addGraphSub(d,item,title,rows){const sub=d.createElement('div');sub.className='stage-detail-sub';const h=d.createElement('h5');h.textContent=title;const grid=d.createElement('div');grid.className='stage-detail-grid';for(const [k,v] of rows){const a=d.createElement('span'),b=d.createElement('b');a.textContent=k;b.textContent=v;grid.append(a,b);}sub.append(h,grid);item.append(sub);}
+  function buildGraphDetails(d,s){
+    const root=d.getElementById('graph-detail-content'),overlay=d.getElementById('graph-detail-overlay');if(!root||!overlay||overlay.hidden||!s)return;
+    const rows=s.results.filter(r=>r.set===s.set);const sig='set:'+s.set+':'+rows.length+':'+(rows.at(-1)?.stage||0);if(root.dataset.fullSig===sig)return;root.dataset.fullSig=sig;root.replaceChildren();
+    if(!rows.length){const p=d.createElement('div');p.className='graph-detail-empty';p.textContent='STAGE終了後に詳細を表示します。';root.append(p);return;}
+    const list=d.createElement('div');list.className='stage-detail-list';
+    for(const r of rows){const item=d.createElement('section');item.className='stage-detail-item';const title=d.createElement('div');title.className='stage-detail-title';const st=d.createElement('strong'),score=d.createElement('span');st.textContent='STAGE '+r.stage;score.textContent='得点 '+int(r.score?.total||0);title.append(st,score);item.append(title);
+      addGraphSub(d,item,'個体数',[["植物",`${int(r.counts?.plants)}（${int(r.minCounts?.plants)}–${int(r.maxCounts?.plants)}）`],["草食",`${int(r.counts?.herbs)}（${int(r.minCounts?.herbs)}–${int(r.maxCounts?.herbs)}）`],["肉食",`${int(r.counts?.carns)}（${int(r.minCounts?.carns)}–${int(r.maxCounts?.carns)}）`]]);
+      addGraphSub(d,item,'イベント',[["植物摂食",int(r.events?.plantEaten)],["捕食",int(r.events?.herbEaten)],["出生",`草食 ${int(r.events?.herbBirths)} / 肉食 ${int(r.events?.carnBirths)}`],["死亡",`草食 自然 ${int(r.events?.herbNaturalDeaths)} / 捕食 ${int(r.events?.herbEaten)} / 肉食 ${int(r.events?.carnNaturalDeaths)}`]]);
+      addGraphSub(d,item,'植物・活動',[["植物生成",`活動 ${int(r.events?.activityPlantsCreated)} / 死体 ${int(r.events?.corpsePlantsCreated)} / 周期 ${int((r.events?.lifecycleSeedsCreated||0)+(r.events?.plantRegrown||0)+(r.events?.eatenPlantDormancyRegrow||0))} / 能力 ${int(r.events?.oneShotPlantsCreated)}`],["活動",`獲得 ${int(r.activity?.earned)} / 消費 ${int(r.activity?.spent)} / 残 ${int(r.activity?.end)}`]]);list.append(item);}root.append(list);
   }
   function applyCopy(d,w){
     const s=w&&w.__v1rSession;
     const sel=d.getElementById('selection');
-    if(sel){const h=sel.querySelector('h2');if(h&&h.textContent!=='能力を選択')h.textContent='能力を選択';const hint=sel.querySelector(':scope > .hint');if(hint)hint.hidden=true;const lab=sel.querySelector('label[for="seed"]');if(lab&&lab.textContent!=='seed')lab.textContent='seed';const b=sel.querySelector('#seed-form button');if(b&&b.textContent!=='候補を表示')b.textContent='候補を表示';}
+    if(sel){ensureSelectionHeading(d,sel,'SET ABILITY',1);const hint=sel.querySelector(':scope > .hint');if(hint)hint.hidden=true;const lab=sel.querySelector('label[for="seed"]');if(lab&&lab.textContent!=='seed')lab.textContent='seed';const b=sel.querySelector('#seed-form button');if(b&&b.textContent!=='候補を表示')b.textContent='候補を表示';}
     const normal=d.getElementById('normal-selection');
-    if(normal){const stage=s?Math.min(6,Number(s.stage||0)+1):null;contextLabel(d,d.getElementById('normal-heading'),'能力を選択',stage?'STAGE '+stage:'');const hint=normal.querySelector(':scope > .hint');if(hint)hint.hidden=true;}
+    if(normal){const stage=s?Math.min(6,Number(s.stage||0)+1):2;ensureSelectionHeading(d,normal,'NORMAL ABILITY',stage);const hint=normal.querySelector(':scope > .hint');if(hint)hint.hidden=true;formatNormalChoices(d,s);}
     const second=d.getElementById('second-set-selection');
-    if(second){const h=second.querySelector('h2');if(h&&h.textContent!=='能力を選択')h.textContent='能力を選択';second.querySelectorAll(':scope > .hint:not(#set-summary)').forEach(x=>x.hidden=true);const sum=d.getElementById('set-summary');if(sum&&s&&s.phase==='set-result'){const v=Math.round(Number(s.setScore())||0).toLocaleString('ja-JP');if(sum.dataset.compactScore!==v){sum.className='hint ui-score-summary';sum.replaceChildren();const l=d.createElement('span');contextLabel(d,l,'得点','SET 1');const strong=d.createElement('strong');strong.textContent=v;sum.append(l,strong);sum.dataset.compactScore=v;}}}
+    if(second){ensureSelectionHeading(d,second,'SET ABILITY',1);second.querySelectorAll(':scope > .hint:not(#set-summary)').forEach(x=>x.hidden=true);const sum=d.getElementById('set-summary');if(sum&&s&&s.phase==='set-result'){const v=int(s.setScore());if(sum.dataset.compactScore!==v){sum.className='hint ui-score-summary';sum.replaceChildren();const l=d.createElement('span');contextLabel(d,l,'得点','SET 1');const strong=d.createElement('strong');strong.textContent=v;sum.append(l,strong);sum.dataset.compactScore=v;}}}
     const scoreLabel=d.getElementById('score-label');if(scoreLabel){scoreLabel.classList.add('compact-score-label');scoreLabel.dataset.context=s?'SET '+s.set:'';}
-    d.querySelectorAll('#normal-choices .choice[data-ability]').forEach(btn=>{if(!s)return;const id=btn.dataset.ability,a=s.engine.NORMAL_ABILITIES[id],desc=btn.querySelector('span');if(!a||!desc)return;const n=(s.state.normalStacks[id]||0)+1,cap=s.engine.values.normalStackCap;const v=a.kind==='score'?('+'+Math.round(Number(s.engine.values.normal[id])*100)+'% · '+n+'/'+cap):(n+'/'+cap);if(desc.textContent!==v)desc.textContent=v;});
+    buildGraphDetails(d,s);
     const result=d.getElementById('result');
-    if(result&&!result.hidden){const h=d.getElementById('result-heading');if(h&&h.textContent!=='12 Stage 完了')h.textContent='12 Stage 完了';contextLabel(d,d.getElementById('result-score-label'),'得点','TOTAL');const cards=d.querySelectorAll('.final-set-scores > div > span');if(cards[0])contextLabel(d,cards[0],'得点','SET 1');if(cards[1])contextLabel(d,cards[1],'得点','SET 2');const summary=result.querySelector('details > summary');if(summary&&summary.textContent!=='詳細')summary.textContent='詳細';compactDetails(d);}
+    if(result&&!result.hidden){const h=d.getElementById('result-heading');if(h&&h.textContent!=='12 Stage 完了')h.textContent='12 Stage 完了';contextLabel(d,d.getElementById('result-score-label'),'得点','TOTAL');const cards=d.querySelectorAll('.final-set-scores > div > span');if(cards[0])contextLabel(d,cards[0],'得点','SET 1');if(cards[1])contextLabel(d,cards[1],'得点','SET 2');const summary=result.querySelector('details > summary');if(summary&&summary.textContent!=='詳細')summary.textContent='詳細';const replay=d.getElementById('replay');if(replay)replay.hidden=true;buildResultDetails(d,s);}
     syncSetGold(d);
   }
   frame.addEventListener('load',()=>{setTimeout(install,50);setTimeout(install,250);setTimeout(install,800)});
