@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>EcologicaLite PC layout prototype</title>
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#081018;
+  --panel:#101a27;
+  --panel2:#132130;
+  --line:#2b4055;
+  --line2:#40566f;
+  --text:#e8f0f7;
+  --muted:#8397aa;
+  --mint:#94d5bd;
+  --gold:#e7c86d;
+  --plant:#54b878;
+  --herb:#d5d8a8;
+  --carn:#d9876a;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,"Segoe UI","Yu Gothic UI",sans-serif}
+body{min-height:100vh;overflow:auto}
+.page{
+  min-height:100vh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:flex-start;
+  padding:54px 28px 30px clamp(28px,4vw,74px);
+}
+.prototype{
+  position:relative;
+  display:grid;
+  grid-template-columns:210px 660px 250px;
+  gap:12px;
+  width:max-content;
+  max-width:calc(100vw - 56px);
+}
+.brand{
+  position:absolute;
+  right:2px;
+  top:-31px;
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:.08em;
+  color:var(--mint);
+  white-space:nowrap;
+}
+.rail,.center{min-width:0}
+.rail{
+  min-height:100%;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.card,.stage,.stats,.graph-card,.ability-card,.hp-card,.controls,.restart{
+  border:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(20,34,49,.96),rgba(13,24,36,.96));
+  border-radius:10px;
+}
+.stage{padding:10px 12px 11px}
+.eyebrow{color:#71879b;font-size:8px;font-weight:800;letter-spacing:.13em}
+.stage strong{display:block;margin-top:2px;font-size:18px;line-height:1.1}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;background:transparent;border:0}
+.stat{
+  position:relative;
+  height:69px;
+  padding:8px 9px;
+  border:1px solid var(--line);
+  background:var(--panel2);
+  border-radius:9px;
+}
+.stat small{display:block;color:#879caf;font-size:8px;font-weight:700}
+.stat b{position:absolute;right:9px;bottom:7px;font-size:23px;line-height:1;font-variant-numeric:tabular-nums}
+.dot{position:absolute;left:9px;bottom:10px;width:18px;height:18px;border-radius:5px;background:var(--plant);box-shadow:0 0 0 1px rgba(255,255,255,.08) inset}
+.dot.herb{background:var(--herb);border-radius:50%}
+.dot.carn{background:var(--carn);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.graph-card{margin-top:2px;padding:9px 9px 8px;min-height:205px;display:flex;flex-direction:column}
+.graph-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.graph-head strong{font-size:10px}.graph-head span{color:var(--muted);font-size:8px}
+.graph{
+  position:relative;
+  flex:1;
+  min-height:132px;
+  overflow:hidden;
+  border:1px solid #24394d;
+  border-radius:7px;
+  background:
+    linear-gradient(to right,transparent 24%,rgba(111,137,160,.11) 25%,transparent 26%,transparent 49%,rgba(111,137,160,.11) 50%,transparent 51%,transparent 74%,rgba(111,137,160,.11) 75%,transparent 76%),
+    linear-gradient(to bottom,transparent 24%,rgba(111,137,160,.11) 25%,transparent 26%,transparent 49%,rgba(111,137,160,.11) 50%,transparent 51%,transparent 74%,rgba(111,137,160,.11) 75%,transparent 76%),
+    #0a141f;
+}
+.graph svg{position:absolute;inset:0;width:100%;height:100%}
+.graph-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px}
+button{height:31px;border:1px solid var(--line2);border-radius:8px;background:#152335;color:#d9e5ef;font:inherit;font-size:9px;font-weight:700}
+.center{display:flex;flex-direction:column;align-self:start}
+.board-shell{
+  position:relative;
+  width:660px;
+  aspect-ratio:28/18;
+  overflow:hidden;
+  border:1px solid #355068;
+  border-radius:10px;
+  background:#07131d;
+  box-shadow:0 18px 48px rgba(0,0,0,.25)
+}
+.board{
+  position:absolute;inset:7px 32px 7px 7px;
+  border:1px solid #284258;
+  border-radius:7px;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 10% 22%,#58bb7b 0 3px,transparent 3.3px),
+    radial-gradient(circle at 16% 67%,#d5d8a8 0 4px,transparent 4.4px),
+    radial-gradient(circle at 33% 30%,#58bb7b 0 3px,transparent 3.3px),
+    radial-gradient(circle at 48% 75%,#d9876a 0 4px,transparent 4.5px),
+    radial-gradient(circle at 60% 42%,#58bb7b 0 3px,transparent 3.3px),
+    radial-gradient(circle at 72% 20%,#d5d8a8 0 4px,transparent 4.4px),
+    radial-gradient(circle at 84% 66%,#58bb7b 0 3px,transparent 3.3px),
+    repeating-linear-gradient(0deg,transparent 0 20px,rgba(72,103,126,.09) 20px 21px),
+    repeating-linear-gradient(90deg,transparent 0 20px,rgba(72,103,126,.09) 20px 21px),
+    #0b1721;
+}
+.activity{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);width:16px;height:116px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;color:#728a9d;font-size:7px
+}
+.meter{position:relative;width:7px;flex:1;margin:4px 0;border:1px solid #37506a;border-radius:999px;background:#0d1b29;overflow:hidden}
+.meter::after{content:"";position:absolute;left:0;right:0;bottom:0;height:44%;background:#5ab78e}
+.time{height:28px;display:flex;align-items:center;justify-content:flex-end;padding:0 2px;color:#93a9bb;font-size:9px;font-variant-numeric:tabular-nums}
+.ability-card{padding:10px 10px 9px;min-height:156px}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.section-title strong{font-size:10px}.section-title span{font-size:8px;color:var(--muted)}
+.ability{padding:6px 7px;border:1px solid #6b5c2f;border-radius:7px;background:#4f451e;color:#f3dda0;font-size:8px;font-weight:700;margin-bottom:5px}
+.ability.normal{border-color:#36516a;background:#132334;color:#d9e6f0}
+.spacer{flex:1;min-height:26px}
+.hp-card{padding:9px 10px}
+.hp-label{color:var(--muted);font-size:8px;margin-bottom:6px}.hp-row{display:flex;align-items:center;gap:8px}.avatar{width:24px;height:24px;border-radius:50%;background:var(--herb)}
+.hp-main{flex:1;min-width:0}.hp-main strong{display:block;font-size:10px}.hp-bar{height:6px;margin-top:4px;border-radius:999px;background:#213448;overflow:hidden}.hp-bar::after{content:"";display:block;width:68%;height:100%;background:#78c39a}
+.hp-value{font-size:9px;color:#bfd0dc;font-variant-numeric:tabular-nums}
+.controls{display:grid;grid-template-columns:1.35fr .8fr;gap:7px;padding:8px}
+.controls button{height:34px;border-radius:999px}
+.restart{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:8px}
+.restart button{height:34px;border-radius:999px}
+.note{position:fixed;right:14px;bottom:10px;color:#53697d;font-size:8px}
+@media(max-width:1220px){
+  .page{padding-left:22px;padding-right:22px}
+  .prototype{grid-template-columns:190px 600px 230px;gap:10px}
+  .board-shell{width:600px}
+}
+@media(max-width:1080px){
+  .page{align-items:flex-start;overflow:auto}
+  .prototype{transform-origin:top left;transform:scale(.9)}
+}
+</style>
+</head>
+<body>
+<div class="page">
+  <main class="prototype" aria-label="PC layout prototype">
+    <div class="brand">EcologicaLite</div>
+
+    <aside class="rail left">
+      <section class="stage">
+        <div class="eyebrow">SET 1</div>
+        <strong>STAGE 3</strong>
+      </section>
+
+      <section class="stats" aria-label="個体数と得点">
+        <div class="stat"><small>植物</small><span class="dot"></span><b>96</b></div>
+        <div class="stat"><small>草食</small><span class="dot herb"></span><b>18</b></div>
+        <div class="stat"><small>肉食</small><span class="dot carn"></span><b>4</b></div>
+        <div class="stat"><small>得点 · SET 1</small><b>1,284</b></div>
+      </section>
+
+      <section class="graph-card">
+        <div class="graph-head"><strong>SET 1 · 累計得点</strong><span>3 / 6</span></div>
+        <div class="graph" aria-label="グラフモック">
+          <svg viewBox="0 0 190 130" preserveAspectRatio="none" aria-hidden="true">
+            <polyline points="0,112 36,92 74,84 113,54 151,40 190,19" fill="none" stroke="#8fc6b0" stroke-width="2" />
+          </svg>
+        </div>
+        <div class="graph-actions"><button>詳細</button><button>コピー</button></div>
+      </section>
+    </aside>
+
+    <section class="center">
+      <div class="board-shell">
+        <div class="board"></div>
+        <div class="activity"><span>12</span><div class="meter"></div><span>0</span></div>
+      </div>
+      <div class="time">00:13.8</div>
+    </section>
+
+    <aside class="rail right">
+      <section class="ability-card">
+        <div class="section-title"><strong>取得能力</strong><span>6</span></div>
+        <div class="ability">植物周期短縮</div>
+        <div class="ability normal">草食摂食回復 +2　1/3</div>
+        <div class="ability normal">繁殖得点 +15%　1/3</div>
+      </section>
+
+      <div class="spacer"></div>
+
+      <section class="hp-card">
+        <div class="hp-label">選択中の個体</div>
+        <div class="hp-row">
+          <span class="avatar"></span>
+          <div class="hp-main"><strong>草食 #H-021</strong><div class="hp-bar"></div></div>
+          <span class="hp-value">122 / 180</span>
+        </div>
+      </section>
+
+      <section class="controls">
+        <button>一時停止</button><button>2×</button>
+      </section>
+
+      <section class="restart">
+        <button>やり直し</button><button>最初から</button>
+      </section>
+    </aside>
+  </main>
+</div>
+<div class="note">PC LAYOUT PROTOTYPE · layout only</div>
+</body>
+</html>
