@@ -12,14 +12,14 @@
       if(!style){
         style=d.createElement('style');
         style.id='ui-v13-style';
-        style.textContent=`
-          .brand{transform:translateY(3px)!important}
-          #result-heading{font-size:0!important}
-          #result-heading::after{content:'GAME SET';font-size:17px;line-height:1.25;font-weight:700;letter-spacing:.03em}
-          @media(max-width:390px){#result-heading::after{font-size:16px}}
-        `;
         d.head.append(style);
       }
+      style.textContent=`
+        .brand{transform:translateY(7px)!important}
+        #result-heading{font-size:0!important}
+        #result-heading::after{content:'GAME SET';font-size:17px;line-height:1.25;font-weight:700;letter-spacing:.03em}
+        @media(max-width:390px){#result-heading::after{font-size:16px}}
+      `;
     }
   }
   frame.addEventListener('load',()=>{setTimeout(apply,50);setTimeout(apply,250);setTimeout(apply,800)});
