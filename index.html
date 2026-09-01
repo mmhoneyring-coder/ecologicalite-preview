@@ -11,53 +11,83 @@ html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#081018}
 </style>
 </head>
 <body>
-<iframe id="app" title="EcologicaLite" src="./preview.html"></iframe>
+<iframe id="app" title="EcologicaLite" src="./preview.html?v=ui-copy-v9"></iframe>
 <script>
 (()=>{
   const frame=document.getElementById('app');
-  let installedDoc=null;
-  function install(){
-    let d;
-    try{d=frame.contentDocument;}catch(_){return;}
-    if(!d||!d.head||!d.body||!d.querySelector('.board-shell'))return;
-    if(installedDoc===d&&d.getElementById('root-v8-fixes'))return;
-    installedDoc=d;
-
-    const style=d.createElement('style');
-    style.id='root-v8-fixes';
-    style.textContent=`
-      .ability-set:nth-child(2) .set-ability:not(.empty){background:#5b4d20!important;border-color:#bda35b!important;color:#ffe89b!important}
-      .board-shell{position:relative!important}
-      .legacy-result-panel.result-overlay-panel{position:absolute!important;inset:8px!important;z-index:80!important;display:flex!important;align-items:center!important;justify-content:center!important;margin:0!important;padding:8px!important;border:0!important;border-radius:12px!important;background:rgba(3,8,13,.42)!important;backdrop-filter:blur(1.6px);-webkit-backdrop-filter:blur(1.6px)}
-      .legacy-result-panel.result-overlay-panel[hidden]{display:none!important}
-      .legacy-result-panel.result-overlay-panel .result-card{width:min(100%,420px);max-height:100%;overflow:auto;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(13,22,32,.96);box-shadow:0 16px 40px rgba(0,0,0,.35)}
-      .legacy-result-panel.result-overlay-panel h2{margin:0 0 7px;font-size:17px;line-height:1.25}
-      .legacy-result-panel.result-overlay-panel .result-score strong{font-size:30px}
-      @media(max-width:390px){.legacy-result-panel.result-overlay-panel{inset:6px!important;padding:6px!important}.legacy-result-panel.result-overlay-panel .result-card{padding:10px}.legacy-result-panel.result-overlay-panel h2{font-size:16px}}
-    `;
-    d.head.appendChild(style);
-
-    const board=d.querySelector('.board-shell'),result=d.getElementById('result');
-    if(board&&result&&!result.dataset.overlayInstalled){
-      const card=d.createElement('div');card.className='result-card';
-      while(result.firstChild)card.appendChild(result.firstChild);
-      result.appendChild(card);
-      result.classList.add('result-overlay-panel');
-      board.appendChild(result);
-      result.dataset.overlayInstalled='1';
-    }
-
-    const score=d.getElementById('score-panel');
-    if(score&&!score.dataset.keepVisible){
-      score.dataset.keepVisible='1';
-      const keep=()=>{const s=d.defaultView&&d.defaultView.__v1rSession;if(s&&s.runDone&&score.hidden)score.hidden=false;};
-      new MutationObserver(keep).observe(score,{attributes:true,attributeFilter:['hidden']});
-      keep();
-    }
+  let installedDoc=null,observer=null;
+  function contextLabel(d,el,label,context=''){
+    if(!el)return;
+    const first=el.firstChild&&el.firstChild.nodeType===3?el.firstChild.textContent:'';
+    const small=el.querySelector(':scope > .ui-context');
+    if(first===label&&((small&&small.textContent)||'')===context)return;
+    el.replaceChildren(d.createTextNode(label));
+    if(context){const s=d.createElement('small');s.className='ui-context';s.textContent=context;el.append(s);}
   }
-  frame.addEventListener('load',()=>{install();setTimeout(install,50);setTimeout(install,250);setTimeout(install,800)});
-  const timer=setInterval(install,150);
-  setTimeout(()=>clearInterval(timer),15000);
+  function install(){
+    let d,w;
+    try{d=frame.contentDocument;w=frame.contentWindow;}catch(_){return;}
+    if(!d||!d.head||!d.body||!d.querySelector('.board-shell'))return;
+    if(installedDoc!==d){
+      installedDoc=d;
+      if(observer)observer.disconnect();
+      const style=d.createElement('style');
+      style.id='root-v9-fixes';
+      style.textContent=`
+        .ui-context{margin-left:5px;color:#8396aa;font-size:.62em;font-weight:700;letter-spacing:.08em;white-space:nowrap}
+        .compact-score-label{font-size:0!important}.compact-score-label::before{content:'得点';font-size:9px}.compact-score-label::after{content:attr(data-context);margin-left:4px;color:#8396aa;font-size:6px;font-weight:700;letter-spacing:.08em}
+        #set-summary.ui-score-summary{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:4px 0 6px!important}#set-summary.ui-score-summary strong{color:#e8d089;font-size:13px}
+        .board-shell{position:relative!important}
+        .legacy-result-panel.result-overlay-panel{position:absolute!important;inset:8px!important;z-index:80!important;display:flex!important;align-items:center!important;justify-content:center!important;margin:0!important;padding:8px!important;border:0!important;border-radius:12px!important;background:rgba(3,8,13,.42)!important;backdrop-filter:blur(1.6px);-webkit-backdrop-filter:blur(1.6px)}
+        .legacy-result-panel.result-overlay-panel[hidden]{display:none!important}
+        .legacy-result-panel.result-overlay-panel .result-card{width:min(100%,420px);max-height:100%;overflow:auto;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(13,22,32,.96);box-shadow:0 16px 40px rgba(0,0,0,.35)}
+        .legacy-result-panel.result-overlay-panel h2{margin:0 0 7px;font-size:17px;line-height:1.25}
+        .legacy-result-panel.result-overlay-panel .result-score strong{font-size:30px}
+        @media(max-width:390px){.legacy-result-panel.result-overlay-panel{inset:6px!important;padding:6px!important}.legacy-result-panel.result-overlay-panel .result-card{padding:10px}.legacy-result-panel.result-overlay-panel h2{font-size:16px}}
+      `;
+      d.head.appendChild(style);
+      const board=d.querySelector('.board-shell'),result=d.getElementById('result');
+      if(board&&result&&!result.dataset.overlayInstalled){const card=d.createElement('div');card.className='result-card';while(result.firstChild)card.appendChild(result.firstChild);result.appendChild(card);result.classList.add('result-overlay-panel');board.appendChild(result);result.dataset.overlayInstalled='1';}
+      const score=d.getElementById('score-panel');
+      if(score&&!score.dataset.keepVisible){score.dataset.keepVisible='1';const keep=()=>{const s=w&&w.__v1rSession;if(s&&s.runDone&&score.hidden)score.hidden=false;};new MutationObserver(keep).observe(score,{attributes:true,attributeFilter:['hidden']});keep();}
+      observer=new MutationObserver(()=>requestAnimationFrame(()=>applyCopy(d,w)));
+      observer.observe(d.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:['hidden','class']});
+    }
+    applyCopy(d,w);
+  }
+  function syncSetGold(d){
+    const items=d.querySelectorAll('.ability-set .set-ability');
+    if(items.length<2||items[1].classList.contains('empty'))return;
+    const c=d.defaultView.getComputedStyle(items[0]);
+    for(const [p,v] of [['background',c.background],['border-color',c.borderTopColor],['color',c.color],['box-shadow',c.boxShadow]])items[1].style.setProperty(p,v,'important');
+  }
+  function compactDetails(d){
+    d.querySelectorAll('#result-details dt').forEach(dt=>{
+      const t=dt.textContent.trim();let m;
+      if(t==='最終Stage終了時生存点')dt.textContent='生存点';
+      else if(t==='ラン合計得点')contextLabel(d,dt,'得点','TOTAL');
+      else if((m=t.match(/^Set([12])合計$/)))contextLabel(d,dt,'得点','SET '+m[1]);
+      else if((m=t.match(/^Set([12]) Stage(\d+)得点$/)))contextLabel(d,dt,'STAGE '+m[2],'SET '+m[1]);
+      else if(t==='草食自然死 / 捕食死')dt.textContent='草食死亡（自然 / 捕食）';
+      else if(t==='活動 / 死体由来植物')dt.textContent='植物生成（活動 / 死体）';
+    });
+  }
+  function applyCopy(d,w){
+    const s=w&&w.__v1rSession;
+    const sel=d.getElementById('selection');
+    if(sel){const h=sel.querySelector('h2');if(h&&h.textContent!=='能力を選択')h.textContent='能力を選択';const hint=sel.querySelector(':scope > .hint');if(hint)hint.hidden=true;const lab=sel.querySelector('label[for="seed"]');if(lab&&lab.textContent!=='seed')lab.textContent='seed';const b=sel.querySelector('#seed-form button');if(b&&b.textContent!=='候補を表示')b.textContent='候補を表示';}
+    const normal=d.getElementById('normal-selection');
+    if(normal){const stage=s?Math.min(6,Number(s.stage||0)+1):null;contextLabel(d,d.getElementById('normal-heading'),'能力を選択',stage?'STAGE '+stage:'');const hint=normal.querySelector(':scope > .hint');if(hint)hint.hidden=true;}
+    const second=d.getElementById('second-set-selection');
+    if(second){const h=second.querySelector('h2');if(h&&h.textContent!=='能力を選択')h.textContent='能力を選択';second.querySelectorAll(':scope > .hint:not(#set-summary)').forEach(x=>x.hidden=true);const sum=d.getElementById('set-summary');if(sum&&s&&s.phase==='set-result'){const v=Math.round(Number(s.setScore())||0).toLocaleString('ja-JP');if(sum.dataset.compactScore!==v){sum.className='hint ui-score-summary';sum.replaceChildren();const l=d.createElement('span');contextLabel(d,l,'得点','SET 1');const strong=d.createElement('strong');strong.textContent=v;sum.append(l,strong);sum.dataset.compactScore=v;}}}
+    const scoreLabel=d.getElementById('score-label');if(scoreLabel){scoreLabel.classList.add('compact-score-label');scoreLabel.dataset.context=s?'SET '+s.set:'';}
+    d.querySelectorAll('#normal-choices .choice[data-ability]').forEach(btn=>{if(!s)return;const id=btn.dataset.ability,a=s.engine.NORMAL_ABILITIES[id],desc=btn.querySelector('span');if(!a||!desc)return;const n=(s.state.normalStacks[id]||0)+1,cap=s.engine.values.normalStackCap;const v=a.kind==='score'?('+'+Math.round(Number(s.engine.values.normal[id])*100)+'% · '+n+'/'+cap):(n+'/'+cap);if(desc.textContent!==v)desc.textContent=v;});
+    const result=d.getElementById('result');
+    if(result&&!result.hidden){const h=d.getElementById('result-heading');if(h&&h.textContent!=='12 Stage 完了')h.textContent='12 Stage 完了';contextLabel(d,d.getElementById('result-score-label'),'得点','TOTAL');const cards=d.querySelectorAll('.final-set-scores > div > span');if(cards[0])contextLabel(d,cards[0],'得点','SET 1');if(cards[1])contextLabel(d,cards[1],'得点','SET 2');const summary=result.querySelector('details > summary');if(summary&&summary.textContent!=='詳細')summary.textContent='詳細';compactDetails(d);}
+    syncSetGold(d);
+  }
+  frame.addEventListener('load',()=>{setTimeout(install,50);setTimeout(install,250);setTimeout(install,800)});
+  const timer=setInterval(install,250);setTimeout(()=>clearInterval(timer),15000);
 })();
 </script>
 </body>
