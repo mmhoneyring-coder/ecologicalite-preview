@@ -2,16 +2,19 @@
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><title>EcologicaLite Preview</title><style>html,body{margin:0;background:#081018;color:#e9f1f8;font-family:system-ui,-apple-system,sans-serif}#loading{display:grid;place-items:center;min-height:100vh;font-size:14px;color:#9fb0c1}</style></head><body><div id="loading">EcologicaLite を読み込み中…</div><script>
 (async()=>{
   try{
-    const raw=await (await fetch('./index.html?v='+Date.now(),{cache:'no-store'})).text();
+    const raw=await (await fetch('./base.html?v='+Date.now(),{cache:'no-store'})).text();
     const doc=new DOMParser().parseFromString(raw,'text/html');
     const req=(sel)=>{const el=doc.querySelector(sel);if(!el)throw Error('preview patch target missing: '+sel);return el};
 
+    // Mobile information order: STAGE -> counts/score -> board.
     const head=req('.pc-headrow'),top=req('.pc-headrow .top'),cards=req('.pc-headrow .cards');
     head.insertBefore(top,cards);
 
+    // Compact playback controls.
     const speedWrap=req('.speed-wrap');
     speedWrap.innerHTML='<div class="speed-head">再生</div><div class="playback-compact" role="group" aria-label="再生操作"><button id="play-toggle" type="button" aria-label="一時停止">⏸</button><button id="speed-cycle" type="button" aria-label="再生速度 1倍">1×</button></div>';
 
+    // Detail overlay is anchored to the graph itself.
     const graph=req('#score-graph'),detail=req('#graph-detail-overlay');
     const graphWrap=doc.createElement('div');graphWrap.className='graph-preview-wrap';
     graph.parentNode.insertBefore(graphWrap,graph);graphWrap.append(graph,detail);
@@ -53,6 +56,7 @@
     rep("  for(const button of document.querySelectorAll('[data-speed]'))button.onclick=()=>{\n    const next=Number(button.dataset.speed);if(clock)clock.setSpeed(next,performance.now());speed=next;paint();\n    if(clock&&session.done){cancelAnimationFrame(raf);finish();}\n  };","  $('play-toggle').onclick=()=>setPaused(!paused);\n  $('speed-cycle').onclick=cycleSpeed;",'playback binding');
     runtime.textContent=js;
 
+    // Touch ability popover and expanded graph details for the public preview.
     const patch=doc.createElement('script');patch.textContent=`
 (()=>{
  const byId=id=>document.getElementById(id);let anchor=null;
