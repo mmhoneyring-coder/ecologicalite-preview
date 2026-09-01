@@ -1,7 +1,7 @@
 (()=>{
   const frame=document.getElementById('app');if(!frame)return;
   const mobile=matchMedia('(max-width:639px)');let installedDoc=null,layoutState=null,waitTimer=null,infoMarkup='',css='';
-  const assets=Promise.all([fetch('./game-info-v19.html?v=19').then(r=>r.text()),fetch('./ui-v15.css?v=15').then(r=>r.text())]).then(([h,c])=>{infoMarkup=h;css=c;return true;}).catch(e=>{console.error('ui-v15 assets',e);return false;});
+  const assets=Promise.all([fetch('./game-info-v19.html?v=20').then(r=>r.text()),fetch('./ui-v15.css?v=15').then(r=>r.text())]).then(([h,c])=>{infoMarkup=h;css=c;return true;}).catch(e=>{console.error('ui-v15 assets',e);return false;});
 
   function updateHp(d){
     const root=d.getElementById('animal-hp'),source=d.getElementById('animal-species'),values=d.getElementById('animal-hp-values');
