@@ -2192,6 +2192,22 @@ button{font:inherit;color:inherit;cursor:pointer}
  .speed button{font-size:11px}.overlay .choice span{font-size:7px}#animal-id{font-size:15px}#animal-hp-values{font-size:10.5px}#animal-species{width:18px;height:18px}
 }
 </style>
+<style id="integrated-ui-v11-v14">
+.ui-context{margin-left:5px;color:#8396aa;font-size:.62em;font-weight:700;letter-spacing:.08em;white-space:nowrap}
+.compact-score-label{font-size:0!important}.compact-score-label::before{content:'得点';font-size:9px}.compact-score-label::after{content:attr(data-context);margin-left:4px;color:#8396aa;font-size:6px;font-weight:700;letter-spacing:.08em}
+#set-summary{display:none!important}.selection-main-row{display:flex;align-items:baseline;gap:7px;margin:1px 0 5px;min-width:0}.selection-stage{margin:0;color:#edf4fb;font-size:12px;font-weight:800;letter-spacing:.05em;line-height:1.15;white-space:nowrap}.selection-main-row h2{margin:0!important;font-size:12px!important;line-height:1.2!important;font-weight:650!important;white-space:nowrap}
+#selection>.overlay-stage,#normal-selection>.overlay-stage,#second-set-selection>.overlay-stage{margin-bottom:2px!important;color:#e8d089!important;font-size:8.5px!important;letter-spacing:.13em!important}
+.overlay .choices .choice{height:56px!important;min-height:56px!important;padding:7px 8px!important;overflow:hidden!important;border-radius:8px!important}.overlay .choices .choice strong{font-size:10.5px!important;line-height:1.2!important;margin:0!important}.overlay .choices .choice span{font-size:7.8px!important;line-height:1.3!important}
+#choices .choice,#second-set-choices .choice{background:#5b4d20!important;border-color:#bda35b!important;box-shadow:inset 0 1px 0 rgba(255,232,155,.2)!important}#choices .choice strong,#second-set-choices .choice strong{color:#ffe89b!important}#choices .choice span,#second-set-choices .choice span{color:#cdbf8f!important}#choices .choice em,#second-set-choices .choice em{display:none!important}
+#normal-choices .choice.ui-normal-choice{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;column-gap:8px!important;row-gap:3px!important;align-items:baseline!important}#normal-choices .choice.ui-normal-choice strong{grid-column:1;grid-row:1;min-width:0;margin:0!important;white-space:normal}#normal-choices .choice-stack{grid-column:2;grid-row:1;color:#6f8193!important;font-size:7.8px!important;font-weight:600!important;text-align:right;white-space:nowrap}#normal-choices .choice-desc{grid-column:1/-1;grid-row:2;color:#91a2b4!important;font-size:7.8px!important;line-height:1.3}
+.brand{font-size:11px!important;font-weight:800!important;letter-spacing:.08em!important;color:#94d5bd!important;opacity:1!important;text-transform:none!important;text-align:right!important;position:relative!important;top:7px!important;transform:none!important}
+.bottom-runtime-actions{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:7px!important;padding-top:9px!important}.bottom-runtime-actions button,.bottom-runtime-actions #back,.bottom-runtime-actions #new-run{box-sizing:border-box!important;width:100%!important;min-width:0!important;height:34px!important;min-height:34px!important;max-height:34px!important;margin:0!important;padding:0 9px!important;border:1px solid #40566f!important;border-radius:999px!important;background:#152335!important;color:#cdd9e6!important;box-shadow:none!important;font-size:10px!important;font-weight:500!important;line-height:32px!important;order:initial!important;appearance:none!important;-webkit-appearance:none!important}.bottom-runtime-actions #back[hidden]+#new-run{grid-column:1/-1}
+.board-shell{position:relative!important}.legacy-result-panel.result-overlay-panel{position:absolute!important;inset:8px!important;z-index:80!important;display:flex!important;align-items:center!important;justify-content:center!important;margin:0!important;padding:8px!important;border:0!important;border-radius:12px!important;background:rgba(3,8,13,.42)!important;backdrop-filter:blur(1.6px);-webkit-backdrop-filter:blur(1.6px)}.legacy-result-panel.result-overlay-panel[hidden]{display:none!important}.legacy-result-panel.result-overlay-panel .result-card{width:min(100%,420px);max-height:100%;overflow:auto;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(13,22,32,.96);box-shadow:0 16px 40px rgba(0,0,0,.35)}.legacy-result-panel.result-overlay-panel h2{margin:0 0 7px;font-size:17px;line-height:1.25}.legacy-result-panel.result-overlay-panel .result-score strong{font-size:30px}#replay{display:none!important}
+#result-details.result-detail-groups{display:block!important;margin:7px 0 2px!important;font-size:9px!important}.result-detail-group{padding:8px 0 2px;border-top:1px solid rgba(93,117,141,.32)}.result-detail-group:first-child{border-top:0;padding-top:2px}.result-detail-group>h3{margin:0 0 6px;color:#edf4fb;font-size:11px;font-weight:800}.result-detail-sub{padding:6px 0 2px;border-top:1px solid rgba(93,117,141,.22)}.result-detail-sub:first-of-type{border-top:0;padding-top:0}.result-detail-sub>h4{margin:0 0 4px;color:#a9d8c8;font-size:9px;font-weight:750}.detail-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:baseline;padding:2px 0}.detail-row span{color:#8fa2b5}.detail-row strong{color:#e3edf6;font-weight:650;text-align:right;font-variant-numeric:tabular-nums}.stage-set-block{padding:5px 0 1px;border-top:1px solid rgba(93,117,141,.18)}.stage-set-block:first-of-type{border-top:0}.stage-set-head{display:flex;justify-content:space-between;align-items:baseline;margin:0 0 3px;color:#e8d089;font-size:8.5px;font-weight:750}.legacy-result-panel details[open]>summary{position:sticky;top:-1px;z-index:4;padding:5px 0;background:rgba(13,22,32,.98)}
+#graph-detail-overlay{padding:5px!important;background:rgba(3,7,11,.42)!important}#graph-detail-overlay .graph-detail-card{width:min(96%,340px)!important;max-height:96%!important;height:auto!important;padding:7px!important;background:rgba(14,22,32,.94)!important;overflow:auto!important}#graph-detail-overlay .graph-detail-head{position:sticky!important;top:0!important;z-index:5!important;margin:-2px -2px 5px!important;padding:2px!important;background:rgba(14,22,32,.98)!important}#graph-detail-overlay #graph-detail-close{width:26px!important;height:26px!important;min-width:26px!important;min-height:26px!important;padding:0!important;line-height:24px!important}.graph-detail-table{width:100%;border-collapse:collapse;table-layout:fixed;font-variant-numeric:tabular-nums}.graph-detail-table th,.graph-detail-table td{padding:6px 3px;border-bottom:1px solid rgba(93,117,141,.22);text-align:right;font-size:8px;white-space:nowrap}.graph-detail-table th{color:#7f92a6;font-size:7px;font-weight:650}.graph-detail-table th:first-child,.graph-detail-table td:first-child{text-align:left}.graph-detail-table td:first-child{color:#e8d089;font-weight:700}.graph-detail-table td{color:#dbe6f0}.graph-detail-caption{margin:0 0 5px;color:#8195a9;font-size:7.5px}.graph-detail-empty{padding:14px 8px;color:#8fa2b5;font-size:9px;text-align:center}
+#result-heading{font-size:0!important}#result-heading::after{content:'GAME SET';font-size:17px;line-height:1.25;font-weight:700;letter-spacing:.03em}
+@media(max-width:390px){.legacy-result-panel.result-overlay-panel{inset:6px!important;padding:6px!important}.legacy-result-panel.result-overlay-panel .result-card{padding:10px}.selection-stage{font-size:11.5px}.bottom-runtime-actions button,.bottom-runtime-actions #back,.bottom-runtime-actions #new-run{height:32px!important;min-height:32px!important;max-height:32px!important;line-height:30px!important}#result-heading::after{font-size:16px}}
+</style>
 </head>
 <body>
 <!-- Integrated functional shell based on the finalized mobile + provisional PC layout. -->
@@ -3920,6 +3936,7 @@ function setLayoutPreview(mode){
 }
 
 const number=n=>Number(n.toFixed(2)).toLocaleString('ja-JP');
+const int=n=>Math.round(Number(n)||0).toLocaleString('ja-JP');
 function normalAbilityTip(id){
   const a=session.engine.NORMAL_ABILITIES[id],v=session.engine.values.normal[id];if(!a)return '';
   if(a.kind==='score')return `${a.name}。1積みにつき対象得点 +${number(Number(v)*100)}%。最大${session.engine.values.normalStackCap}積み。`;
@@ -3938,6 +3955,57 @@ function renderOwned(d){
     else{list.classList.add('muted-list');const span=document.createElement('span');span.textContent='—';list.append(span);}
     col.append(list);root.append(col);
   }
+}
+
+function label(el,text,context=''){
+  if(!el)return;el.replaceChildren(document.createTextNode(text));
+  if(context){const small=document.createElement('small');small.className='ui-context';small.textContent=context;el.append(small);}
+}
+function heading(section,kind,stage){
+  if(!section)return;const kindEl=section.querySelector(':scope>.overlay-stage');if(kindEl)kindEl.textContent=kind;
+  let row=section.querySelector(':scope>.selection-main-row');if(!row){row=document.createElement('div');row.className='selection-main-row';kindEl?.after(row);}
+  let stageEl=row.querySelector('.selection-stage');if(!stageEl){stageEl=document.createElement('div');stageEl.className='selection-stage';row.append(stageEl);}stageEl.textContent='STAGE '+stage;
+  const h=row.querySelector('h2')||section.querySelector(':scope>h2');if(h){row.append(h);h.textContent='能力を選択';}
+}
+function normalText(name,ability,value){
+  let display=name;if(ability?.kind==='score'&&!/%/.test(display))display+=` +${Math.round(Number(value||0)*100)}%`;
+  let desc='取得すると効果が加算される。';
+  if(ability?.kind==='score')desc=(name.replace(/得点アップ$/,'').trim()||'対象')+'に関する得点を増やす。';
+  else if(/子HP/.test(name))desc='繁殖時に生まれる子のHPを増やす。';
+  else if(/捕食時HP回復/.test(name))desc='捕食時のHP回復量を増やす。';
+  else if(/草食回復/.test(name))desc='植物を食べたときのHP回復量を増やす。';
+  else if(/活動植物生成/.test(name))desc='植物生成に必要な活動値を減らす。';
+  else if(/一時投入/.test(name))desc='取得時に一度だけ個体を追加する。';
+  return {display,desc};
+}
+function syncGold(){
+  const items=document.querySelectorAll('.ability-set .set-ability');if(items.length<2||items[1].classList.contains('empty'))return;
+  const computed=getComputedStyle(items[0]);for(const [property,value] of [['background',computed.background],['border-color',computed.borderTopColor],['color',computed.color],['box-shadow',computed.boxShadow]])items[1].style.setProperty(property,value,'important');
+}
+const detailRow=(parent,key,value)=>{const line=document.createElement('div');line.className='detail-row';const a=document.createElement('span'),b=document.createElement('strong');a.textContent=key;b.textContent=value;line.append(a,b);parent.append(line);};
+const detailSub=(parent,title,rows)=>{const section=document.createElement('div');section.className='result-detail-sub';const h=document.createElement('h4');h.textContent=title;section.append(h);rows.forEach(([key,value])=>detailRow(section,key,value));parent.append(section);};
+const eventSum=(results,key)=>results.reduce((total,result)=>total+Number(result.events?.[key]||0),0);
+const scoreSum=(results,key)=>results.reduce((total,result)=>total+Number(result.score?.components?.[key]||0),0);
+function renderResultDetails(){
+  const root=$('result-details');if(!root||!session?.runDone)return;root.className='result-detail-groups';root.replaceChildren();const results=session.results;
+  const ecology=document.createElement('section');ecology.className='result-detail-group';ecology.innerHTML='<h3>生態系</h3>';
+  detailSub(ecology,'循環',[['植物摂食',int(eventSum(results,'plantEaten'))],['捕食',int(eventSum(results,'herbEaten'))]]);
+  detailSub(ecology,'出生・死亡',[['草食出生',int(eventSum(results,'herbBirths'))],['肉食出生',int(eventSum(results,'carnBirths'))],['草食死亡',`自然 ${int(eventSum(results,'herbNaturalDeaths'))} / 捕食 ${int(eventSum(results,'herbEaten'))}`],['肉食死亡',int(eventSum(results,'carnNaturalDeaths'))]]);root.append(ecology);
+  const score=document.createElement('section');score.className='result-detail-group';score.innerHTML='<h3>得点</h3>';
+  detailSub(score,'内訳',[['植物摂食',int(scoreSum(results,'herbFeed'))],['捕食',int(scoreSum(results,'carnPred'))],['草食出生',int(scoreSum(results,'herbBirth'))],['肉食出生',int(scoreSum(results,'carnBirth'))],['草食生存',int(scoreSum(results,'herbSurvival'))],['肉食生存',int(scoreSum(results,'carnSurvival'))]]);
+  const stages=document.createElement('div');stages.className='result-detail-sub';stages.innerHTML='<h4>STAGE別</h4>';
+  for(let set=1;set<=2;set++){const block=document.createElement('div');block.className='stage-set-block';const setResults=results.filter(result=>result.set===set),head=document.createElement('div');head.className='stage-set-head';head.innerHTML=`<span>SET ${set}</span><span>${int(setResults.reduce((total,result)=>total+Number(result.score?.total||0),0))}</span>`;block.append(head);setResults.forEach(result=>detailRow(block,'STAGE '+result.stage,int(result.score?.total||0)));stages.append(block);}
+  score.append(stages);root.append(score);
+}
+function installIntegratedUi(){
+  heading($('selection'),'SET ABILITY',1);heading($('normal-selection'),'NORMAL ABILITY',2);heading($('second-set-selection'),'SET ABILITY',1);
+  document.querySelectorAll('#selection>.hint,#normal-selection>.hint,#second-set-selection>.hint').forEach(el=>el.hidden=true);
+  const seedLabel=document.querySelector('label[for="seed"]');if(seedLabel)seedLabel.textContent='seed';const seedButton=document.querySelector('#seed-form button');if(seedButton)seedButton.textContent='候補を表示';
+  $('set-summary').hidden=true;const scoreLabel=$('score-label');scoreLabel.classList.add('compact-score-label');scoreLabel.dataset.context='SET 1';label(scoreLabel,'得点','SET 1');
+  const result=$('result');if(result&&!result.querySelector(':scope>.result-card')){const card=document.createElement('div');card.className='result-card';while(result.firstChild)card.append(result.firstChild);result.append(card);result.classList.add('result-overlay-panel');document.querySelector('.board-shell')?.append(result);}
+  label($('result-score-label'),'得点','TOTAL');const cards=document.querySelectorAll('.final-set-scores>div>span');label(cards[0],'得点','SET 1');label(cards[1],'得点','SET 2');
+  const details=result?.querySelector('details'),summary=details?.querySelector(':scope>summary');if(summary){summary.textContent='詳細';details.addEventListener('toggle',()=>summary.textContent=details.open?'詳細を閉じる':'詳細');}
+  $('replay').hidden=true;$('graph-detail-overlay').addEventListener('click',event=>{if(event.target===$('graph-detail-overlay'))toggleGraphDetails(false);});
 }
 
 function hovered(){if(!pointer)return null;const r=$('field').getBoundingClientRect();return hitAnimal(drawn,images,(pointer.x-r.left)*$('field').clientWidth/r.width,(pointer.y-r.top)*$('field').clientHeight/r.height);}
@@ -3972,53 +4040,48 @@ function paint(){
   document.documentElement.style.setProperty('--board-ratio',String(session.cfg.cols/session.cfg.rows));
   $('turn').textContent=`T${d.stageTurn} / ${d.stageLength}`;$('time').textContent=`${(d.stageTurn/4).toFixed(1)} / ${(d.stageLength/4).toFixed(1)}秒`;
   $('set-turn').textContent=`Set${d.set} T${d.turn} / ${d.setLimit} · このSet ${formatScore(d.setScore)}点`;
-  $('score-label').textContent='現在得点';
+  $('score-label').dataset.context=`SET ${d.set}`;const scoreContext=$('score-label').querySelector('.ui-context');if(scoreContext)scoreContext.textContent=`SET ${d.set}`;
   $('score').textContent=formatScore(d.setScore);$('progress').max=d.stageLength;$('progress').value=d.stageTurn;
   $('playback-rate').textContent=`${4*speed}T / 秒 · ${speed}x`;
   updatePlaybackControls();
-  $('score-panel').hidden=session.runDone;
+  $('score-panel').hidden=false;
   paintScoreGraph($('score-graph'),$('stage-score-rows'),$('score-graph-heading'),d);if(!$('graph-detail-overlay').hidden)renderGraphDetails();
-  $('owned').textContent=Object.entries(d.normalStacks).map(([id,n])=>`${session.engine.NORMAL_ABILITIES[id].name} ×${n}`).join(' ／ ')||'通常能力：未取得';renderOwned(d);
+  $('owned').textContent=Object.entries(d.normalStacks).map(([id,n])=>`${session.engine.NORMAL_ABILITIES[id].name} ×${n}`).join(' ／ ')||'通常能力：未取得';renderOwned(d);syncGold();
   $('copy-results').disabled=session.results.length===0;
   $('diagnostic').textContent=JSON.stringify(d,null,2);
 }
 function finish(){
-  clock=null;paused=false;updatePlaybackControls();const complete=session.setDone,last=session.results.at(-1);
+  clock=null;paused=false;updatePlaybackControls();const complete=session.setDone;
   if(!complete){$('active').hidden=true;selectNormal();return;}
   if(!session.runDone){$('active').hidden=true;selectSecondSet();return;}
-  $('status').textContent='全12Stage完了';$('active').hidden=true;$('result').hidden=false;
+  $('status').textContent='GAME SET';document.body.classList.add('ui-game-set');$('active').hidden=true;$('result').hidden=false;$('result-heading').setAttribute('aria-label','GAME SET');
   $('result-eyebrow').textContent='RUN COMPLETE';
-  $('result-heading').textContent='12のStageを、観測しました。';
-  $('result-score-label').textContent='TOTAL · 2Set合計';
+  $('result-heading').textContent='12 Stage 完了';
+  label($('result-score-label'),'得点','TOTAL');
   $('final-score').textContent=formatScore(session.runScore());
   const totals=runTotals(session.results);$('final-set1').textContent=formatScore(totals.sets[0]);$('final-set2').textContent=formatScore(totals.sets[1]);
-  const e=session.results.reduce((a,r)=>{for(const [k,v] of Object.entries(r.events))a[k]=(a[k]||0)+v;return a;},{}),s=last.score.components;
-  const rows=[['植物摂食',e.plantEaten],['捕食',e.herbEaten],['草食出生',e.herbBirths],['肉食出生',e.carnBirths],['草食自然死 / 捕食死',`${e.herbNaturalDeaths} / ${e.herbEaten}`],['肉食死亡',e.carnNaturalDeaths],['活動 / 死体由来植物',`${e.activityPlantsCreated} / ${e.corpsePlantsCreated}`],['最終Stage終了時生存点',formatScore(s.herbSurvival+s.carnSurvival)],['ラン合計得点',formatScore(session.runScore())]];
-  for(let set=1;set<=2;set++){rows.push([`Set${set}合計`,formatScore(session.results.filter(r=>r.set===set).reduce((a,r)=>a+r.score.total,0))]);for(const r of session.results.filter(r=>r.set===set))rows.push([`Set${r.set} Stage${r.stage}得点`,formatScore(r.score.total)]);}
-  $('result-details').replaceChildren(...rows.flatMap(([k,v])=>{const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;return [dt,dd];}));
-  $('replay').hidden=false;
+  renderResultDetails();$('replay').hidden=true;
 }
 function frame(now){if(paused||!clock)return;if(clock.advance(now))paint();if(session.done){paint();paused=false;finish();return;}raf=requestAnimationFrame(frame);}
-function runStage(){paused=false;for(const b of previewButtons)b.setAttribute('aria-pressed',String(b.dataset.layoutPreview==='game'));clock=new FixedClock(session,performance.now(),speed);$('normal-selection').hidden=true;$('second-set-selection').hidden=true;$('result').hidden=true;$('active').hidden=false;$('status').textContent=`Set${session.set} Stage${session.stage}観測中`;$('ability-name').textContent=session.state.setRewards.map(id=>SET_TEXT[id][0]).join(' ＋ ');$('ability-description').textContent=session.state.setRewards.map(id=>SET_TEXT[id][1]).join(' / ');paint();raf=requestAnimationFrame(frame);}
+function runStage(){paused=false;document.body.classList.remove('ui-game-set');for(const b of previewButtons)b.setAttribute('aria-pressed',String(b.dataset.layoutPreview==='game'));clock=new FixedClock(session,performance.now(),speed);$('normal-selection').hidden=true;$('second-set-selection').hidden=true;$('result').hidden=true;$('active').hidden=false;$('status').textContent=`Set${session.set} Stage${session.stage}観測中`;$('ability-name').textContent=session.state.setRewards.map(id=>SET_TEXT[id][0]).join(' ＋ ');$('ability-description').textContent=session.state.setRewards.map(id=>SET_TEXT[id][1]).join(' / ');paint();raf=requestAnimationFrame(frame);}
 function start(ability){cancelAnimationFrame(raf);observation.reset();pointer=null;selected=ability;session=createRunSession(api,base,seed,ability);$('selection').hidden=true;$('back').hidden=false;runStage();}
 function selectSecondSet(){
   for(const b of previewButtons)b.setAttribute('aria-pressed',String(b.dataset.layoutPreview==='selection'));
-  $('result').hidden=true;$('normal-selection').hidden=true;$('second-set-selection').hidden=false;$('status').textContent='Set2能力選択待ち';
+  $('result').hidden=true;$('normal-selection').hidden=true;$('second-set-selection').hidden=false;$('status').textContent='Set2能力選択待ち';heading($('second-set-selection'),'SET ABILITY',1);
   $('set-summary').textContent=`Set1完了：${formatScore(session.setScore())}点。通常能力5個を引き継ぎます。`;
   $('second-set-choices').replaceChildren(...session.setOffers().map(id=>{const b=document.createElement('button'),name=document.createElement('strong'),desc=document.createElement('span');b.type='button';b.className='choice';b.dataset.ability=id;name.textContent=SET_TEXT[id][0];desc.textContent=SET_TEXT[id][1];b.append(name,desc);b.onclick=()=>{session.beginSet(id);observation.reset();pointer=null;runStage();};return b;}));
 }
 function selectNormal(){
   for(const b of previewButtons)b.setAttribute('aria-pressed',String(b.dataset.layoutPreview==='selection'));
   if(session.phase!=='stage-result')return;
-  $('result').hidden=true;$('normal-selection').hidden=false;$('status').textContent='通常能力選択待ち';$('normal-heading').textContent=`Set${session.set} Stage${session.stage+1}へ向けて`;
-  $('normal-choices').replaceChildren(...session.offers().map(id=>{const b=document.createElement('button'),name=document.createElement('strong'),desc=document.createElement('span');
-    b.type='button';b.className='choice';b.dataset.ability=id;name.textContent=session.engine.NORMAL_ABILITIES[id].name;
-    desc.textContent=`${session.engine.NORMAL_ABILITIES[id].kind==='score'?`得点 +${number(session.engine.values.normal[id]*100)}%/積み`:'生態系能力'} · 取得後 ${(session.state.normalStacks[id]||0)+1}/${session.engine.values.normalStackCap} · 選んで開始`;
-    b.append(name,desc);b.onclick=()=>{session.beginNext(id);pointer=null;runStage();};return b;}));
+  $('result').hidden=true;$('normal-selection').hidden=false;$('status').textContent='通常能力選択待ち';heading($('normal-selection'),'NORMAL ABILITY',Math.min(6,session.stage+1));
+  $('normal-choices').replaceChildren(...session.offers().map(id=>{const b=document.createElement('button'),name=document.createElement('strong'),stack=document.createElement('span'),desc=document.createElement('span'),ability=session.engine.NORMAL_ABILITIES[id],next=(session.state.normalStacks[id]||0)+1,text=normalText(ability.name,ability,session.engine.values.normal[id]);
+    b.type='button';b.className='choice ui-normal-choice';b.dataset.ability=id;name.textContent=text.display;stack.className='choice-stack';stack.textContent=`${next}/${session.engine.values.normalStackCap}`;desc.className='choice-desc';desc.textContent=text.desc;
+    b.append(name,stack,desc);b.onclick=()=>{session.beginNext(id);pointer=null;runStage();};return b;}));
 }
 function choose(){
-  cancelAnimationFrame(raf);observation.reset();pointer=null;clock=null;seed=$('seed').value.trim()||DEFAULT_SEED;$('seed').value=seed;selected=null;session=createRunSession(api,base,seed);
-  $('selection').hidden=false;$('normal-selection').hidden=true;$('second-set-selection').hidden=true;$('active').hidden=true;$('result').hidden=true;$('back').hidden=true;$('status').textContent='能力選択待ち';$('score-label').textContent='現在得点';
+  cancelAnimationFrame(raf);observation.reset();pointer=null;clock=null;document.body.classList.remove('ui-game-set');seed=$('seed').value.trim()||DEFAULT_SEED;$('seed').value=seed;selected=null;session=createRunSession(api,base,seed);
+  $('selection').hidden=false;$('normal-selection').hidden=true;$('second-set-selection').hidden=true;$('active').hidden=true;$('result').hidden=true;$('back').hidden=true;$('status').textContent='能力選択待ち';label($('score-label'),'得点','SET 1');$('score-label').dataset.context='SET 1';
   $('choices').replaceChildren(...offerAbilities(createEngine,base.values,seed).map(id=>{const b=document.createElement('button');b.type='button';b.className='choice';b.dataset.ability=id;b.setAttribute('aria-label',SET_TEXT[id][0]+'を選んで開始');const name=document.createElement('strong'),desc=document.createElement('span'),go=document.createElement('em');name.textContent=SET_TEXT[id][0];desc.textContent=SET_TEXT[id][1];go.textContent='この能力で始める →';b.append(name,desc,go);b.onclick=()=>start(id);return b;}));paint();
 }
 function createNewSeed(){
@@ -4048,17 +4111,11 @@ function renderSpec(){
 }
 function toggleSpec(open){const o=$('spec-overlay');o.hidden=!open;if(open){renderSpec();$('spec-close').focus();}else $('spec-open').focus();}
 function renderGraphDetails(){
-  const root=$('graph-detail-content');if(!root||!session)return;
-  const d=session.diagnostic(),rows=[];
-  for(let stage=1;stage<=6;stage++){
-    const r=session.results.find(x=>x.set===d.set&&x.stage===stage);
-    if(r){rows.push({stage,score:r.score.total,plants:r.counts?.end?.plants??r.plants,herbs:r.counts?.end?.herbs??r.herbs,carns:r.counts?.end?.carns??r.carns,state:'確定'});}
-    else if(stage===d.stage&&!session.runDone){rows.push({stage,score:d.score.total,plants:d.plants,herbs:d.herbs,carns:d.carns,state:d.phase==='running'?'進行中':'選択待ち'});}
-    else rows.push({stage,score:null,plants:null,herbs:null,carns:null,state:'—'});
-  }
-  const table=document.createElement('table');table.innerHTML='<thead><tr><th>Stage</th><th>得点</th><th>植物</th><th>草食</th><th>肉食</th></tr></thead>';
-  const body=document.createElement('tbody');for(const r of rows){const tr=document.createElement('tr');for(const v of [r.stage,r.score,r.plants,r.herbs,r.carns]){const td=document.createElement('td');td.textContent=v===null?'—':(typeof v==='number'?number(v):v);tr.append(td);}body.append(tr);}table.append(body);
-  const note=document.createElement('p');note.className='graph-detail-note';note.textContent='現在は基本値のみ表示。繁殖・死亡・植物供給などは内部記録済みで、後から表示項目を追加できます。';root.replaceChildren(table,note);
+  const root=$('graph-detail-content');if(!root||!session)return;const set=session.runDone?2:Number(session.set||1),results=session.results.filter(result=>Number(result.set)===set);root.replaceChildren();
+  if(!results.length){root.innerHTML='<div class="graph-detail-empty">STAGE終了後に詳細を表示します。</div>';return;}
+  const caption=document.createElement('p');caption.className='graph-detail-caption';caption.textContent=`SET ${set} · STAGE終了時`;
+  const table=document.createElement('table');table.className='graph-detail-table';table.innerHTML='<thead><tr><th>STAGE</th><th>得点</th><th>植物</th><th>草食</th><th>肉食</th></tr></thead>';
+  const body=document.createElement('tbody');results.forEach(result=>{const tr=document.createElement('tr');[result.stage,int(result.score?.total||0),int(result.counts?.plants||0),int(result.counts?.herbs||0),int(result.counts?.carns||0)].forEach(value=>{const td=document.createElement('td');td.textContent=value;tr.append(td);});body.append(tr);});table.append(body);root.append(caption,table);
 }
 function toggleGraphDetails(force){const o=$('graph-detail-overlay');const open=force??o.hidden;o.hidden=!open;if(open)renderGraphDetails();$('graph-detail').setAttribute('aria-pressed',String(open));}
 async function copyResults(){
@@ -4068,7 +4125,7 @@ async function copyResults(){
   if(!copied){const ta=document.createElement('textarea');ta.value=text;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.opacity='0';document.body.append(ta);ta.select();try{copied=document.execCommand('copy');}catch(_error){}ta.remove();}
   const b=$('copy-results');if(b){const old=b.textContent;b.textContent=copied?'コピー済み':'コピー失敗';setTimeout(()=>{b.textContent=old;},1200);}
 }
-try {base=await loadConfig();images=await loadImages(assetSources);bindAbilityTips();
+try {base=await loadConfig();images=await loadImages(assetSources);installIntegratedUi();bindAbilityTips();
   bindAnimalPointer($('field'),{
     hit:(x,y)=>{pointer={x,y};return hovered();},hover:(x,y)=>{pointer={x,y};observe();},
     select:target=>{observation.pin(target);pointer=null;paint();},clearHover:()=>{pointer=null;observe();}
