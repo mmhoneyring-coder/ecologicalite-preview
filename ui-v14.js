@@ -16,6 +16,19 @@
           top:7px!important;
           transform:none!important;
         }
+        #result-heading{
+          font-size:0!important;
+        }
+        #result-heading::after{
+          content:'GAME SET';
+          font-size:17px;
+          line-height:1.25;
+          font-weight:700;
+          letter-spacing:.03em;
+        }
+        @media(max-width:390px){
+          #result-heading::after{font-size:16px}
+        }
       `;
       d.head.append(style);
     }
@@ -25,9 +38,11 @@
     const heading=d.getElementById('result-heading');
 
     const syncFinal=()=>{
-      if(!result||result.hidden)return;
+      const done=Boolean(result&&!result.hidden);
+      d.body?.classList.toggle('ui-game-set',done);
+      if(!done)return;
       if(status&&status.textContent!=='GAME SET')status.textContent='GAME SET';
-      if(heading&&heading.textContent!=='GAME SET')heading.textContent='GAME SET';
+      if(heading)heading.setAttribute('aria-label','GAME SET');
     };
 
     if(result&&!result.dataset.uiV14Observed){
@@ -63,8 +78,6 @@
     },100);
   }
 
-  frame.addEventListener('load',()=>{
-    setTimeout(waitForFinalDocument,50);
-  });
+  frame.addEventListener('load',()=>setTimeout(waitForFinalDocument,50));
   waitForFinalDocument();
 })();
