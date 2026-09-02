@@ -2171,7 +2171,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 </style>
 <style id="game-ui-styles">
 .ui-context{margin-left:5px;color:#8396aa;font-size:.62em;font-weight:700;letter-spacing:.08em;white-space:nowrap}
-.compact-score-label{font-size:0!important}.compact-score-label::before{content:'得点';font-size:9px}.compact-score-label::after{content:attr(data-context);margin-left:4px;color:#8396aa;font-size:6px;font-weight:700;letter-spacing:.08em}
+.compact-score-label{font-size:0!important}.compact-score-label::before{content:'得点';font-size:9px}.compact-score-label::after{content:none;display:none}
 #set-summary{display:none!important}.selection-main-row{display:flex;align-items:baseline;gap:7px;margin:1px 0 5px;min-width:0}.selection-stage{margin:0;color:#edf4fb;font-size:12px;font-weight:800;letter-spacing:.05em;line-height:1.15;white-space:nowrap}.selection-main-row h2{margin:0!important;font-size:12px!important;line-height:1.2!important;font-weight:650!important;white-space:nowrap}
 #selection>.overlay-stage,#normal-selection>.overlay-stage,#second-set-selection>.overlay-stage{margin-bottom:2px!important;color:#e8d089!important;font-size:8.5px!important;letter-spacing:.13em!important}
 .overlay .choices .choice{height:56px!important;min-height:56px!important;padding:7px 8px!important;overflow:hidden!important;border-radius:8px!important}.overlay .choices .choice strong{font-size:10.5px!important;line-height:1.2!important;margin:0!important}.overlay .choices .choice span{font-size:7.8px!important;line-height:1.3!important}
@@ -4065,7 +4065,7 @@ function initializeUi(){
   heading($('selection'),'SET ABILITY',1);heading($('normal-selection'),'NORMAL ABILITY',2);heading($('second-set-selection'),'SET ABILITY',1);
   document.querySelectorAll('#selection>.hint,#normal-selection>.hint,#second-set-selection>.hint').forEach(el=>el.hidden=true);
   const seedLabel=document.querySelector('label[for="seed"]');if(seedLabel)seedLabel.textContent='seed';const seedButton=document.querySelector('#seed-form button');if(seedButton)seedButton.textContent='候補を表示';
-  $('set-summary').hidden=true;const scoreLabel=$('score-label');scoreLabel.classList.add('compact-score-label');scoreLabel.dataset.context='SET 1';label(scoreLabel,'得点','SET 1');
+  $('set-summary').hidden=true;const scoreLabel=$('score-label');scoreLabel.classList.add('compact-score-label');label(scoreLabel,'得点');
   const result=$('result');if(result&&!result.querySelector(':scope>.result-card')){const card=document.createElement('div');card.className='result-card';while(result.firstChild)card.append(result.firstChild);result.append(card);result.classList.add('result-overlay-panel');document.querySelector('.board-shell')?.append(result);}
   label($('result-score-label'),'得点','TOTAL');const cards=document.querySelectorAll('.final-set-scores>div>span');label(cards[0],'得点','SET 1');label(cards[1],'得点','SET 2');
   const details=result?.querySelector('details'),summary=details?.querySelector(':scope>summary');if(summary){summary.textContent='詳細';details.addEventListener('toggle',()=>summary.textContent=details.open?'詳細を閉じる':'詳細');}
@@ -4125,7 +4125,6 @@ function paint(){
   document.documentElement.style.setProperty('--board-ratio',String(session.cfg.cols/session.cfg.rows));
   $('turn').textContent=`T${d.stageTurn} / ${d.stageLength}`;$('time').textContent=`${(d.stageTurn/4).toFixed(1)} / ${(d.stageLength/4).toFixed(1)}秒`;
   $('set-turn').textContent=`Set${d.set} T${d.turn} / ${d.setLimit} · このSet ${formatScore(d.setScore)}点`;
-  $('score-label').dataset.context=`SET ${d.set}`;const scoreContext=$('score-label').querySelector('.ui-context');if(scoreContext)scoreContext.textContent=`SET ${d.set}`;
   $('score').textContent=formatScore(d.setScore);$('progress').max=d.stageLength;$('progress').value=d.stageTurn;
   $('playback-rate').textContent=`${4*speed}T / 秒 · ${speed}x`;
   updatePlaybackControls();
@@ -4164,7 +4163,7 @@ function selectNormal(){
 }
 function choose(){
   cancelAnimationFrame(raf);observation.reset();pointer=null;clock=null;document.body.classList.remove('ui-game-set');seed=$('seed').value.trim()||DEFAULT_SEED;$('seed').value=seed;selected=null;session=createRunSession(api,base,seed);
-  $('selection').hidden=false;$('normal-selection').hidden=true;$('second-set-selection').hidden=true;$('active').hidden=true;$('result').hidden=true;$('back').hidden=true;$('status').textContent='能力選択待ち';label($('score-label'),'得点','SET 1');$('score-label').dataset.context='SET 1';
+  $('selection').hidden=false;$('normal-selection').hidden=true;$('second-set-selection').hidden=true;$('active').hidden=true;$('result').hidden=true;$('back').hidden=true;$('status').textContent='能力選択待ち';label($('score-label'),'得点');
   $('choices').replaceChildren(...offerAbilities(createEngine,base.values,seed).map(id=>{const b=document.createElement('button');b.type='button';b.className='choice';b.dataset.ability=id;b.setAttribute('aria-label',SET_TEXT[id][0]+'を選んで開始');const name=document.createElement('strong'),desc=document.createElement('span'),go=document.createElement('em');name.textContent=SET_TEXT[id][0];desc.textContent=SET_TEXT[id][1];go.textContent='この能力で始める →';b.append(name,desc,go);b.onclick=()=>start(id);return b;}));paint();
 }
 function createNewSeed(){
