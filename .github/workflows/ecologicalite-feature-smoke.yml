@@ -16,10 +16,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: chat/best-score-repro-20260903
+          fetch-depth: 0
       - name: Install Selenium
         run: python -m pip install --quiet selenium
-      - name: Browser smoke test
+      - name: Browser smoke and deterministic regression
         run: |
+          git show 0d02724ae9a65d31fb2a438c47cc9937254b7509:index.html > baseline.html
           python -m http.server 8000 >/tmp/ecologicalite-http.log 2>&1 &
           python - <<'PY'
           import time
@@ -36,8 +38,28 @@ jobs:
           opts.set_capability('goog:loggingPrefs', {'browser':'ALL'})
           driver=webdriver.Chrome(options=opts)
           wait=WebDriverWait(driver,15)
+
+          def direct_run(path):
+            driver.get(f'http://127.0.0.1:8000/{path}')
+            wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,'#choices .choice')))
+            driver.find_elements(By.CSS_SELECTOR,'#choices .choice')[0].click()
+            wait.until(lambda d:d.execute_script("return window.__v1rSession && window.__v1rSession.phase==='running'"))
+            return driver.execute_script("""
+              const s=window.__v1rSession;
+              let guard=0;
+              while(!s.runDone && guard++<20000){
+                while(!s.done && guard++<20000)s.step();
+                if(s.phase==='stage-result'){const offers=s.offers();s.beginNext(offers[0]);}
+                else if(s.phase==='set-result'){const offers=s.setOffers();s.beginSet(offers[0]);}
+              }
+              return {phase:s.phase,score:s.runScore(),stages:s.results.length,csv:s.exportCsv()};
+            """)
+
           try:
             driver.set_window_size(390,844)
+            baseline=direct_run('baseline.html')
+            assert baseline['phase']=='run-result' and baseline['stages']==12, baseline
+
             driver.get('http://127.0.0.1:8000/index.html')
             wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR,'#choices .choice')))
             assert driver.execute_script("return document.getElementById('best-score-reset')!==null")
@@ -53,11 +75,15 @@ jobs:
                 if(s.phase==='stage-result'){const offers=s.offers();s.beginNext(offers[0]);}
                 else if(s.phase==='set-result'){const offers=s.setOffers();s.beginSet(offers[0]);}
               }
-              return {phase:s.phase,score:s.runScore(),stages:s.results.length};
+              return {phase:s.phase,score:s.runScore(),stages:s.results.length,csv:s.exportCsv()};
             """)
             assert result['phase']=='run-result', result
             assert result['stages']==12, result
-            driver.execute_script("if(document.getElementById('result').hidden){document.getElementById('speed-cycle').click();}")
+            assert result['score']==baseline['score'], (baseline['score'],result['score'])
+            assert result['csv']==baseline['csv'], 'deterministic CSV changed'
+
+            # Programmatic click invokes the normal end path even when the result overlay already covers controls.
+            driver.execute_script("document.getElementById('speed-cycle').click()")
             wait.until(lambda d:d.find_element(By.ID,'status').text=='GAME SET')
             wait.until(lambda d:not d.find_element(By.ID,'best-score-overlay').get_attribute('hidden'))
             stored=driver.execute_script("""
@@ -95,7 +121,8 @@ jobs:
             logs=driver.get_log('browser')
             severe=[x for x in logs if x.get('level')=='SEVERE']
             assert not severe, severe
-            print('GAME SET score:',result['score'])
+            print('Deterministic score:',result['score'])
+            print('Deterministic CSV: exact match')
             print('BEST rows:',len(stored['rows']))
             print('Mobile overlay geometry:',geometry)
           finally:
