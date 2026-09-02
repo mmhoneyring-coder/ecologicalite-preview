@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer"><title>EcologicaLite Preview</title>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer"><title>EcologicaLite</title>
 <!-- EDIT ZONE: styles. Keep element ids and data-speed wiring intact. -->
 <style id="v1r-styles">
 :root{
@@ -2247,22 +2247,32 @@ button{font:inherit;color:inherit;cursor:pointer}
   .app.pc-layout .spec-card.ui-v15-info{width:min(900px,calc(100vw - 80px))!important;max-height:90vh!important}.app.pc-layout .spec-card.ui-v15-info .info-tier-head h2{font-size:14px!important}.app.pc-layout .spec-card.ui-v15-info .info-details>summary{font-size:11px!important;min-height:38px!important}.app.pc-layout .spec-card.ui-v15-info .info-sub h3{font-size:9px!important}.app.pc-layout .spec-card.ui-v15-info .info-sub p{font-size:9px!important}
 }
 </style>
+<style id="integrated-preview-layout-v6">
+/* Final layout adjustments from the retired intermediate loader. */
+.top{border-bottom:0}.stage{border:0;background:transparent;box-shadow:none;border-radius:0;padding:2px 0}
+.set-label{font-size:9px;font-weight:750;letter-spacing:.09em;color:#a9d8c8;background:transparent;border:0;border-radius:0;padding:1px 0 2px;margin-bottom:4px}
+.graph-panel,.abilities-panel{min-height:164px}.graph{height:112px}.graph-preview-wrap{position:relative;min-height:0}
+.graph-detail-overlay{position:absolute;inset:1px;z-index:40;padding:5px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(3,7,11,.38);backdrop-filter:blur(1.2px);-webkit-backdrop-filter:blur(1.2px)}.graph-detail-card{width:min(92%,300px);height:auto;max-height:94%;padding:7px 8px;border:1px solid rgba(112,137,161,.82);border-radius:9px;background:rgba(14,22,32,.78);box-shadow:0 8px 24px rgba(0,0,0,.28);overflow:auto;overscroll-behavior:contain}.graph-detail-head{position:sticky;top:0;z-index:1;margin:-2px -2px 5px;padding:2px;background:rgba(14,22,32,.82)}
+.bottom-runtime-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.bottom-runtime-actions button,.bottom-runtime-actions #back{width:100%!important;min-width:0!important;margin:0!important;order:initial!important}
+@media(max-width:390px){.graph-panel,.abilities-panel{min-height:156px}.graph{height:100px}.bottom-runtime-actions{gap:5px}.graph-detail-card{width:94%;padding:6px 7px}}
+@media(min-width:640px){.pc-headrow .card.plant{grid-column:1}.pc-headrow .card.herb{grid-column:2}.pc-headrow .card.carn{grid-column:3}.pc-headrow .card.score{grid-column:4}.pc-headrow .stage{grid-column:5}.pc-headrow .brand{grid-column:6}}
+</style>
 </head>
 <body>
 <!-- Integrated functional shell based on the finalized mobile + provisional PC layout. -->
 <main class="app">
   <div id="error" role="alert" hidden></div>
   <div class="pc-headrow">
+    <div class="top">
+      <div id="stage-badge" class="stage" aria-label="現在のSetとStage"><span id="set-badge">SET 1 / 2</span><strong>STAGE <b id="stage-current" class="stage-current">01</b><small class="stage-total">/ 06</small></strong></div>
+      <button id="spec-open" type="button" class="brand brand-button" aria-haspopup="dialog">EcologicaLite</button>
+    </div>
     <section class="cards" aria-label="現在の生態系">
       <div class="card plant" aria-label="植物"><i class="ico" aria-hidden="true"></i><div id="p" class="num">0</div></div>
       <div class="card herb" aria-label="草食"><i class="ico" aria-hidden="true"></i><div id="h" class="num">0</div></div>
       <div class="card carn" aria-label="肉食"><i class="ico" aria-hidden="true"></i><div id="c" class="num">0</div></div>
       <div class="card score"><div id="score-label" class="label">現在得点</div><div id="score" class="num">0</div></div>
     </section>
-    <div class="top">
-      <div id="stage-badge" class="stage" aria-label="現在のSetとStage"><span id="set-badge">SET 1 / 2</span><strong>STAGE <b id="stage-current" class="stage-current">01</b><small class="stage-total">/ 06</small></strong></div>
-      <button id="spec-open" type="button" class="brand brand-button" aria-haspopup="dialog">EcologicaLite</button>
-    </div>
   </div>
 
   <section class="board-shell" aria-label="生態系の盤面">
@@ -2302,8 +2312,10 @@ button{font:inherit;color:inherit;cursor:pointer}
   <section class="below compact-below">
     <div id="score-panel" class="panel graph-panel">
       <div class="panelhead"><strong id="score-graph-heading">SET 1 · 累計得点</strong><span id="graph-stage-count">0 / 6</span></div>
-      <svg id="score-graph" class="graph" viewBox="0 0 390 210" aria-label="得点グラフ"></svg>
-      <div id="graph-detail-overlay" class="graph-detail-overlay" hidden><div class="graph-detail-card"><div class="graph-detail-head"><strong>Stage詳細</strong><button id="graph-detail-close" type="button" aria-label="詳細を閉じる">×</button></div><div id="graph-detail-content" class="graph-detail-content"></div></div></div>
+      <div class="graph-preview-wrap">
+        <svg id="score-graph" class="graph" viewBox="0 0 390 210" aria-label="得点グラフ"></svg>
+        <div id="graph-detail-overlay" class="graph-detail-overlay" hidden><div class="graph-detail-card"><div class="graph-detail-head"><strong>Stage詳細</strong><button id="graph-detail-close" type="button" aria-label="詳細を閉じる">×</button></div><div id="graph-detail-content" class="graph-detail-content"></div></div></div>
+      </div>
       <div class="graph-actions"><button id="graph-detail" type="button" class="graph-detail">詳細</button><button id="copy-results" type="button">コピー</button></div>
       <details id="stage-score-details" class="score-details"><summary>Stage別 <span>⌄</span></summary><table class="stage-score-table"><caption>Stageごとの得点</caption><thead><tr><th>Stage</th><th>得点</th><th>累計</th><th>状態</th></tr></thead><tbody id="stage-score-rows"></tbody></table><p class="hint">Stage終了時に生存点を加算します。</p></details>
     </div>
@@ -2311,7 +2323,55 @@ button{font:inherit;color:inherit;cursor:pointer}
   </section>
   <div class="bottom-runtime-actions" aria-label="ゲームのやり直し"><button id="back" type="button">やり直し</button><button id="new-run" type="button">最初から</button></div>
 
-  <div id="spec-overlay" class="spec-overlay" role="dialog" aria-modal="true" aria-labelledby="spec-title" hidden><div class="spec-card ui-v15-info"><div class="spec-head"><div><small>GAME GUIDE / SPEC</small><h2 id="spec-title">EcologicaLite</h2></div><button id="spec-close" type="button" aria-label="ゲーム情報を閉じる">閉じる</button></div><div id="spec-content" class="spec-content"></div></div></div>
+  <div id="spec-overlay" class="spec-overlay" role="dialog" aria-modal="true" aria-labelledby="spec-title" hidden><div class="spec-card ui-v15-info"><div class="spec-head"><div><small>GAME GUIDE / SPEC</small><h2 id="spec-title">EcologicaLite</h2></div><button id="spec-close" type="button" aria-label="ゲーム情報を閉じる">閉じる</button></div><div id="spec-content" class="spec-content">
+<section class="info-tier">
+  <div class="info-tier-head"><div class="info-tier-no">01</div><h2>ゲームガイド</h2></div>
+  <details class="info-details" open><summary>ゲームの流れ</summary><div class="info-content">
+    <div class="info-sub"><h3>目的</h3><p>植物・草食・肉食が循環する環境を保ちながら、摂食・捕食・繁殖・生存で得点を積み上げます。個体を直接動かすゲームではなく、能力選択で生態系へ介入します。</p></div>
+    <div class="info-sub"><h3>プレイ構成</h3><div class="info-stats"><div class="info-stat"><small>SET</small><strong>2 SET</strong></div><div class="info-stat"><small>各SET</small><strong>6 STAGE</strong></div><div class="info-stat"><small>1 STAGE</small><strong>25秒</strong></div><div class="info-stat"><small>速度</small><strong>1× / 4× / 8×</strong></div></div></div>
+    <div class="info-sub"><h3>進め方</h3><div class="info-guide-steps"><div class="info-guide-step"><b>1</b><span>SET開始時に、SET全体の方向性を決めるSET能力を1つ選びます。</span></div><div class="info-guide-step"><b>2</b><span>STAGEを再生し、生態系の増減や得点の伸びを観察します。</span></div><div class="info-guide-step"><b>3</b><span>STAGE 1〜5の終了後、次のSTAGEへ向けて通常能力を1つ選びます。</span></div><div class="info-guide-step"><b>4</b><span>6 STAGEで1 SET終了。SET 2は新しい盤面で始まり、取得済み能力は引き継ぎます。</span></div><div class="info-guide-step"><b>5</b><span>2 SET・全12 STAGEを終えると、合計得点で結果を確認します。</span></div></div></div>
+  </div></details>
+  <details class="info-details"><summary>生態系の基本</summary><div class="info-content">
+    <div class="info-sub"><h3>登場するもの</h3><div class="info-pills"><span>植物</span><span>草食</span><span>肉食</span><span>死体</span><span>活動値</span></div></div>
+    <div class="info-sub"><h3>食べる・繁殖する・死ぬ</h3><p>草食は植物を食べ、肉食は草食を捕食してHPを回復します。HPは時間とともに減り、0になると死亡します。食べたときの回復で最大HPに到達すると繁殖し、親と子が残ります。</p></div>
+    <div class="info-sub"><h3>植物へ戻る循環</h3><p>自然死した個体は死体となり、死体から植物が生まれます。また、草食の摂食や肉食の捕食で活動値がたまり、一定量に達すると植物が生成されます。</p></div>
+  </div></details>
+  <details class="info-details"><summary>能力の選び方</summary><div class="info-content">
+    <div class="info-sub"><h3>SET能力</h3><p>各SETの開始時に1つ選びます。時間、索敵、植物循環、繁殖など、SET全体の戦い方を大きく変える能力です。</p></div>
+    <div class="info-sub"><h3>通常能力</h3><p>STAGE間で1つずつ選びます。HP回復、子のHP、植物供給、得点などを強化できます。同じ通常能力を重ねて取得できるものもあります。</p></div>
+    <div class="info-sub"><h3>考え方</h3><p>今不足している生き物や植物、得点の伸び方を見て、次のSTAGEで必要な能力を選びます。能力選択がプレイヤーの主な判断です。</p></div>
+  </div></details>
+  <details class="info-details"><summary>得点</summary><div class="info-content">
+    <div class="info-sub"><h3>得点になるもの</h3><div class="info-pills"><span>植物摂食</span><span>捕食</span><span>草食出生</span><span>肉食出生</span><span>草食生存</span><span>肉食生存</span></div></div>
+    <div class="info-sub"><h3>得点の見方</h3><p>摂食・捕食・出生はSTAGE中に加算され、生存はSTAGE終了時の個体数が得点になります。得点系の能力を取ると対象項目を伸ばせます。細かな点数と計算式は「詳細データ」で確認できます。</p></div>
+  </div></details>
+  <details class="info-details"><summary>画面の見方・操作</summary><div class="info-content">
+    <div class="info-sub"><h3>見る場所</h3><p>上部で植物・草食・肉食・現在得点、盤面で生態系の動き、活動バーで植物生成までの進み具合を確認します。個体を選ぶと現在HPを確認できます。</p></div>
+    <div class="info-sub"><h3>操作</h3><div class="info-pills"><span>再生 / 停止</span><span>1× / 4× / 8×</span><span>個体を選択</span><span>グラフ詳細</span><span>結果コピー</span><span>やり直し</span><span>最初から</span></div></div>
+    <div class="info-sub"><h3>グラフと取得能力</h3><p>得点グラフでSTAGEごとの伸びを確認でき、取得済み能力は一覧から効果を確認できます。結果コピーでは分析用の結果データをコピーできます。</p></div>
+  </div></details>
+</section>
+<section class="info-tier">
+  <div class="info-tier-head"><div class="info-tier-no">02</div><h2>詳細データ</h2></div>
+  <details class="info-details" open><summary>STAGE・マップ</summary><div class="info-content">
+    <div class="info-sub"><h3>マップと開始個体数</h3><table class="info-table"><thead><tr><th>区分</th><th>STAGE 1–3</th><th>STAGE 4–6</th><th>開始時 植物 / 草食 / 肉食</th></tr></thead><tbody><tr><td>SET 1</td><td>28 × 18</td><td>33 × 21</td><td>66 / 6 / 1</td></tr><tr><td>SET 2</td><td>30 × 19</td><td>32 × 20</td><td>75 / 7 / 2</td></tr></tbody></table></div>
+    <div class="info-sub"><h3>時間</h3><div class="info-stats"><div class="info-stat"><small>1 STAGE</small><strong>25秒</strong></div><div class="info-stat"><small>基準ターン</small><strong>100 T</strong></div><div class="info-stat"><small>処理速度</small><strong>4 T / 秒</strong></div></div></div>
+  </div></details>
+  <details class="info-details"><summary>移動・HP</summary><div class="info-content"><div class="info-sub"><h3>基準値</h3><table class="info-table"><tbody><tr><th>草食の移動</th><td>3 Turnごと</td></tr><tr><th>肉食の移動</th><td>6 Turnごと</td></tr><tr><th>HP減少</th><td>3 Turnごとに -1</td></tr><tr><th>草食 最大HP / 初期HP</th><td>180 / 90</td></tr><tr><th>肉食 最大HP / 初期HP</th><td>300 / 150</td></tr><tr><th>草食 摂食回復</th><td>+34</td></tr><tr><th>肉食 捕食回復</th><td>+100</td></tr><tr><th>繁殖後の親HP</th><td>最大HPの50%</td></tr><tr><th>子の基準HP</th><td>最大HPの50%</td></tr></tbody></table></div></div></details>
+  <details class="info-details"><summary>活動・死体</summary><div class="info-content"><div class="info-sub"><h3>活動値</h3><table class="info-table"><tbody><tr><th>草食が植物を食べる</th><td>活動 +6</td></tr><tr><th>肉食が草食を捕食</th><td>活動 +18</td></tr><tr><th>活動植物生成</th><td>12 ptで植物1個</td></tr></tbody></table></div><div class="info-sub"><h3>死体</h3><p>死体は40 Turn残り、8 Turnごとに周囲への植物生成を試みます。</p></div></div></details>
+  <details class="info-details"><summary>SET能力</summary><div class="info-content"><div class="info-sub"><h3>固定効果</h3><table class="info-table"><tbody><tr><th>時間延長</th><td>STAGE 1〜6で +1〜+6秒。次SETでは+1秒から</td></tr><tr><th>植物察知</th><td>HP40%以下の草食が半径2の最寄り植物へ向かう</td></tr><tr><th>危険察知</th><td>HP65%以上の草食が半径2の肉食から70%で離れる</td></tr><tr><th>植物の周期</th><td>180Tで休眠、72Tで再生。自然枯死時25%で半径2へ種子散布</td></tr><tr><th>被食植物の再生</th><td>食べられた植物の10%が休眠し、72T後に同じ場所で再生</td></tr><tr><th>捕食の還元</th><td>捕食された草食の20%が死体を残す</td></tr><tr><th>双子の誕生</th><td>通常繁殖時10%で子がもう1体生まれる</td></tr><tr><th>肉食の獲物察知</th><td>HP70%以上の肉食が半径2の最寄り草食へ向かう</td></tr></tbody></table></div></div></details>
+  <details class="info-details"><summary>通常能力</summary><div class="info-content"><div class="info-sub"><h3>重複</h3><p>通常能力は同じ能力を最大3積みまで取得できます。</p></div><div class="info-sub"><h3>固定効果</h3><table class="info-table"><tbody><tr><th>摂食得点アップ</th><td>対象得点 +15% / 積み</td></tr><tr><th>繁殖得点アップ</th><td>対象得点 +15% / 積み</td></tr><tr><th>生存得点アップ</th><td>対象得点 +15% / 積み</td></tr><tr><th>草食系得点アップ</th><td>草食系得点 +10% / 積み</td></tr><tr><th>肉食系得点アップ</th><td>肉食系得点 +10% / 積み</td></tr><tr><th>草食摂食時HP回復</th><td>+2 / 積み</td></tr><tr><th>肉食捕食時HP回復</th><td>+10 / 積み</td></tr><tr><th>草食の子HP</th><td>+10 / 積み</td></tr><tr><th>肉食の子HP</th><td>+15 / 積み</td></tr><tr><th>活動植物生成</th><td>必要pt -1 / 積み</td></tr><tr><th>植物 一時投入</th><td>取得時に植物 +12</td></tr><tr><th>草食 一時投入</th><td>取得時に草食 +2</td></tr></tbody></table></div></div></details>
+  <details class="info-details"><summary>得点計算</summary><div class="info-content"><div class="info-sub"><h3>基礎点</h3><table class="info-table"><tbody><tr><th>植物摂食</th><td>1</td></tr><tr><th>肉食捕食</th><td>30</td></tr><tr><th>草食出生</th><td>20</td></tr><tr><th>肉食出生</th><td>120</td></tr><tr><th>STAGE終了時 草食生存</th><td>4 / 体</td></tr><tr><th>STAGE終了時 肉食生存</th><td>15 / 体</td></tr></tbody></table></div><div class="info-sub"><h3>計算式</h3><p>項目得点 ＝ 対象イベント数（生存はSTAGE終了時個体数）× 基礎点 × 能力倍率。得点能力の重複効果は加算して倍率に反映します。</p></div></div></details>
+</section>
+<section class="info-tier">
+  <div class="info-tier-head"><div class="info-tier-no">03</div><h2>内部仕様</h2></div>
+  <details class="info-details"><summary>ターン処理</summary><div class="info-content"><div class="info-sub"><h3>1 Turnの主な順序</h3><p>Turnを進めた後、植物処理 → 草食処理 → 肉食処理 → 死体処理の順で進みます。草食の出生個体は草食処理後に盤面へ追加され、その後の肉食処理の対象になります。</p></div></div></details>
+  <details class="info-details"><summary>盤面座標</summary><div class="info-content"><div class="info-sub"><h3>端の扱い</h3><p>上下左右の端はつながっています。座標と距離計算はトーラスとして扱い、端を越えると反対側へ回り込みます。</p></div></div></details>
+  <details class="info-details"><summary>STAGE・SET遷移</summary><div class="info-content"><div class="info-sub"><h3>マップ拡張</h3><p>各SETのSTAGE 3終了後、既存個体を維持したままマップだけを拡張します。SET 1は33×21、SET 2は32×20になります。</p></div><div class="info-sub"><h3>SET 2</h3><p>SET 2開始時は30×19の新しい盤面を生成し、植物75・草食7・肉食2から開始します。取得済みの能力状態は引き継ぎます。</p></div></div></details>
+  <details class="info-details"><summary>記録・分析</summary><div class="info-content"><div class="info-sub"><h3>STAGEごとの記録</h3><div class="info-pills"><span>開始 / 終了個体数</span><span>最小 / 最大個体数</span><span>絶滅Turn</span><span>摂食・捕食</span><span>出生・自然死</span><span>植物生成</span><span>活動値</span><span>能力選択</span><span>得点内訳</span><span>累積得点</span></div></div><div class="info-sub"><h3>コピー</h3><p>結果コピーでは、これらのSTAGE単位の分析データをCSV形式で出力します。</p></div></div></details>
+</section>
+
+  </div></div></div>
 
   <section id="active" class="runtime-hidden"><h2 id="ability-name"></h2><p id="ability-description"></p></section>
   <section id="result" class="legacy-result-panel" hidden>
