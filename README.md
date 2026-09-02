@@ -59,23 +59,17 @@ v1Rはv1.0を土台に、マップ・移動テンポ・HP・繁栄設計を「�
 
 ## 現在のコード構成
 
-現状は開発中のUI修正を段階的に積み上げた構造が残っている。
+`index.html` が唯一の正式runtimeであり、GitHub Pagesのルートから直接起動する。
 
-主な実行経路:
+現在の実行経路:
 
 ```text
 index.html
-  └─ preview.html
-       └─ base.html
-
-ui-v11.js ～ ui-v21.js
-ui-v15.css
-game-info-v19.html
 ```
 
-この構成は**現在動いている完成実装**ではあるが、最終的な整理済み構造ではない。
-
-今後のコード整理では、動作・RNG・得点・生態系結果を変えずに、UIパッチ群、重複CSS、prototype、変換処理を正式実装へ統合する。
+- iframeは使用しない。
+- `preview.html`、`base.html`、`ui-vXX`等へのruntime依存はない。
+- PCとスマートフォンは、同一のゲーム状態・同一の実装を共有し、responsive配置だけを切り替える。
 
 ## バランス調整のルール
 
