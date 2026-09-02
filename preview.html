@@ -2,9 +2,13 @@
 <html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><title>EcologicaLite Preview</title><style>html,body{margin:0;background:#081018;color:#e9f1f8;font-family:system-ui,-apple-system,sans-serif}#loading{display:grid;place-items:center;min-height:100vh;font-size:14px;color:#9fb0c1}</style></head><body><div id="loading">EcologicaLite を読み込み中…</div><script>
 (async()=>{
   try{
-    const raw=await (await fetch('./base.html?v='+Date.now(),{cache:'no-store'})).text();
+    const [raw,infoMarkup]=await Promise.all([
+      fetch('./base.html?v='+Date.now(),{cache:'no-store'}).then(response=>response.text()),
+      fetch('./game-info-v19.html?v=20').then(response=>response.text())
+    ]);
     const doc=new DOMParser().parseFromString(raw,'text/html');
     const req=(sel)=>{const el=doc.querySelector(sel);if(!el)throw Error('preview patch target missing: '+sel);return el};
+    req('#spec-content').innerHTML=infoMarkup;
 
     const head=req('.pc-headrow'),top=req('.pc-headrow .top'),cards=req('.pc-headrow .cards');
     head.insertBefore(top,cards);
@@ -19,21 +23,11 @@
 .graph-panel,.abilities-panel{min-height:164px}.graph{height:112px}.graph-preview-wrap{position:relative;min-height:0}
 .graph-detail-overlay{position:absolute;inset:1px;z-index:40;padding:5px;display:flex;align-items:center;justify-content:center;border-radius:8px;background:rgba(3,7,11,.38);backdrop-filter:blur(1.2px);-webkit-backdrop-filter:blur(1.2px)}.graph-detail-card{width:min(92%,300px);height:auto;max-height:94%;padding:7px 8px;border:1px solid rgba(112,137,161,.82);border-radius:9px;background:rgba(14,22,32,.78);box-shadow:0 8px 24px rgba(0,0,0,.28);overflow:auto;overscroll-behavior:contain}.graph-detail-head{position:sticky;top:0;z-index:1;margin:-2px -2px 5px;padding:2px;background:rgba(14,22,32,.82)}
 .bottom-runtime-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px}.bottom-runtime-actions button,.bottom-runtime-actions #back{width:100%!important;min-width:0!important;margin:0!important;order:initial!important}
-.ability-item.tap-tip::after{display:none!important}.ability-popover{position:fixed;z-index:180;max-width:min(250px,calc(100vw - 16px));padding:8px 9px;border:1px solid #617892;border-radius:8px;background:#101a27;color:#edf4fb;font-size:10px;line-height:1.4;white-space:normal;box-shadow:0 10px 28px rgba(0,0,0,.45);pointer-events:none}.ability-popover[hidden]{display:none!important}.stage-detail-list{display:grid;gap:5px}.stage-detail-item{padding:6px;border:1px solid #2d4257;border-radius:7px;background:rgba(13,24,36,.82)}.stage-detail-title{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:4px}.stage-detail-title strong{font-size:9px;color:#e8d089}.stage-detail-title span{font-size:9px;font-weight:750;color:#e9f1f8}.stage-detail-grid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px}.stage-detail-grid dt{color:#8195a9;font-size:7.5px;white-space:nowrap}.stage-detail-grid dd{margin:0;color:#d9e4ef;font-size:7.5px;line-height:1.3;text-align:right;font-variant-numeric:tabular-nums}
+.stage-detail-list{display:grid;gap:5px}.stage-detail-item{padding:6px;border:1px solid #2d4257;border-radius:7px;background:rgba(13,24,36,.82)}.stage-detail-title{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:4px}.stage-detail-title strong{font-size:9px;color:#e8d089}.stage-detail-title span{font-size:9px;font-weight:750;color:#e9f1f8}.stage-detail-grid{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px}.stage-detail-grid dt{color:#8195a9;font-size:7.5px;white-space:nowrap}.stage-detail-grid dd{margin:0;color:#d9e4ef;font-size:7.5px;line-height:1.3;text-align:right;font-variant-numeric:tabular-nums}
 @media(max-width:390px){.graph-panel,.abilities-panel{min-height:156px}.graph{height:100px}.bottom-runtime-actions{gap:5px}.graph-detail-card{width:94%;padding:6px 7px}}
 @media(min-width:640px){.pc-headrow .card.plant{grid-column:1}.pc-headrow .card.herb{grid-column:2}.pc-headrow .card.carn{grid-column:3}.pc-headrow .card.score{grid-column:4}.pc-headrow .stage{grid-column:5}.pc-headrow .brand{grid-column:6}}
 `;
     doc.head.append(style);
-
-    const patch=doc.createElement('script');patch.textContent=`
-(()=>{
- const byId=id=>document.getElementById(id);let anchor=null;
- function pop(){let p=byId('ability-popover');if(!p){p=document.createElement('div');p.id='ability-popover';p.className='ability-popover';p.hidden=true;document.body.append(p)}return p}
- function hide(){const p=pop();anchor=null;p.hidden=true}
- function show(item){const text=item&&item.dataset?item.dataset.tip:'';if(!text)return;const p=pop();p.textContent=text;p.hidden=false;anchor=item;p.style.left='8px';p.style.top='8px';const r=item.getBoundingClientRect(),q=p.getBoundingClientRect(),m=8;let left=Math.max(m,Math.min(innerWidth-q.width-m,r.left+r.width/2-q.width/2));let top=r.top-q.height-m;if(top<m)top=r.bottom+m;if(top+q.height>innerHeight-m)top=Math.max(m,innerHeight-q.height-m);p.style.left=Math.round(left)+'px';p.style.top=Math.round(top)+'px'}
- document.addEventListener('click',e=>{const root=byId('owned-abilities'),item=e.target.closest&&e.target.closest('.ability-item');if(item&&root&&root.contains(item)&&((matchMedia('(hover: none)').matches)||navigator.maxTouchPoints>0)){e.preventDefault();e.stopImmediatePropagation();if(anchor===item&&!pop().hidden)hide();else show(item);return}if(anchor&&!item)hide()},true);
-})();`;
-    doc.body.append(patch);
 
     const html='<!doctype html>\n'+doc.documentElement.outerHTML;
     document.open();document.write(html);document.close();
