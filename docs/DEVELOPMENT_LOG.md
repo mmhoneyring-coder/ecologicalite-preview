@@ -268,3 +268,21 @@ EcologicaLiteのゲーム名を入口として、ゲーム内に仕様表示を�
 - `ui-vXX` の連続上書きなしで完成UIが成立する。
 
 バランス変更はこの整理工程へ混ぜない。必要なバランス変更はコード整理完了後に別工程として行う。
+
+## 17. コード整理完了
+
+2026-09-02、完成状態を保持したままコード統合・不要依存削除まで完了した。
+
+最終整理commit:
+
+- `aef4e023ef75ae759746ab0c9110b0088dc315ca`
+
+整理後の正式runtimeは `index.html` のみ。`iframe`、`preview.html`、`base.html`、`game-info-v19.html`、`ui-vXX`、旧PC prototype、`play-gameset.html` へのruntime依存を解消し、旧ファイル自体も削除した。旧構造と統合過程はGit履歴および `snapshot/v1r-complete-2026-09-02` から復元可能なため、互換用stubやredirectは残していない。
+
+整理工程では、生態系、RNG、seed、能力、得点、SET/STAGE進行、CSVの意味を変更していない。固定seed `v1r-individual-363|run:1` の12 STAGE結果・全events・能力履歴・CSVが整理前と一致し、CSV SHA-256は `dabd1fd5ca2aea387e98bcf5cf104274f1b5903ef0131c13ba7296edf45e270a` のまま確認した。
+
+UIについてもPC 1280×900、1024×900、スマートフォン390×844、PC→mobile→PCの切替、1×/4×/8×、pause、能力説明、HP、グラフ、SET2、GAME SET、コピー、やり直し、最初からを確認し、console error 0を確認した。
+
+Phase 6では、旧試写機能、未使用定数・変数、test用CSS別名、不要な計算済みstyleコピー等の明確なdead codeを削除し、開発途中の名称も一部正常化した。一方、CSS cascadeの全面統合、responsive DOM移動のCSS-only化、runtime DOM整形の静的markup化は、削減余地はあるが現在の完成状態を壊してまで行う必要はないため未実施とした。これらは整理未完了ではなく、将来大きなUI再設計を行う場合の任意候補として扱う。
+
+この時点で、完成後コード整理は完了とする。以後のバランス調整、新機能、演出追加は別工程として扱う。
