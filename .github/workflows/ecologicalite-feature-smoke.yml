@@ -57,7 +57,7 @@ jobs:
             """)
             assert result['phase']=='run-result', result
             assert result['stages']==12, result
-            driver.find_element(By.ID,'speed-cycle').click()
+            driver.execute_script("if(document.getElementById('result').hidden){document.getElementById('speed-cycle').click();}")
             wait.until(lambda d:d.find_element(By.ID,'status').text=='GAME SET')
             wait.until(lambda d:not d.find_element(By.ID,'best-score-overlay').get_attribute('hidden'))
             stored=driver.execute_script("""
