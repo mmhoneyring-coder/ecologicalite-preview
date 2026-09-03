@@ -46,8 +46,8 @@ jobs:
         run: |
           test -s artifacts/balance-diagnostics/SUMMARY.md
           test -s artifacts/balance-diagnostics/summary.json
-          test "$(($(wc -l < artifacts/balance-diagnostics/runs.csv)-1))" -eq 1200
-          test "$(($(wc -l < artifacts/balance-diagnostics/stages.csv)-1))" -eq 14400
+          test "$(awk 'END {print NR-1}' artifacts/balance-diagnostics/runs.csv)" -eq 1200
+          test "$(awk 'END {print NR-1}' artifacts/balance-diagnostics/stages.csv)" -eq 14400
 
       - name: Upload diagnostic results
         uses: actions/upload-artifact@v4
