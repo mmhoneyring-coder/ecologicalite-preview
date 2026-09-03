@@ -81,7 +81,7 @@ const POLICIES=[
   {id:'tailored',label:'狙いビルド'},
   {id:'one-shot-first',label:'一時投入最優先'},
   {id:'burst-plants-first',label:'植物+12優先'},
-  {id:'burst-herbs-first',label:'草食+2優先'},
+  {id:'burst-herbs-first',label:'草食+3優先'},
   {id:'no-one-shot',label:'一時投入なし'},
   {id:'score-first',label:'得点能力優先'},
   {id:'mixed',label:'混合基準'}
@@ -239,7 +239,7 @@ function buildMarkdown({seedCount,aggregates,pairs,meta}){
   const byKey=new Map(aggregates.map(a=>[`${a.build_id}|${a.policy_id}`,a]));
   const lines=['# EcologicaLite v1R バランス診断','',`- seed数: ${seedCount}`,`- runtime version: ${meta.gameVersion}`,`- config hash: ${meta.configHash}`,'- 判定: 自動PASS/FAILなし。現状の問題有無を診断するための比較。','','## 狙いビルド','', '| ビルド | 平均得点 | P10–P90 | 後半得点比 | 最終 植/草/肉 | 主要能力積み/10 | 初期SET出現率 |', '|---|---:|---:|---:|---:|---:|---:|'];
   for(const a of tailored)lines.push(`| ${a.build_label} | ${Math.round(a.score_mean)} | ${Math.round(a.score_p10)}–${Math.round(a.score_p90)} | ${(a.late_share_mean*100).toFixed(1)}% | ${a.final_plants_mean.toFixed(1)} / ${a.final_herbs_mean.toFixed(1)} / ${a.final_carns_mean.toFixed(1)} | ${a.target_stack_total_mean.toFixed(2)} | ${(a.anchor_offer_rate*100).toFixed(1)}% |`);
-  lines.push('','## 一時投入・通常能力方針比較','', '| 初期SET | 狙いビルド | 一時最優先 | 植物+12優先 | 草食+2優先 | 一時なし | 得点優先 | 混合 |', '|---|---:|---:|---:|---:|---:|---:|---:|');
+  lines.push('','## 一時投入・通常能力方針比較','', '| 初期SET | 狙いビルド | 一時最優先 | 植物+12優先 | 草食+3優先 | 一時なし | 得点優先 | 混合 |', '|---|---:|---:|---:|---:|---:|---:|---:|');
   for(const b of BUILDS){
     const vals=['tailored','one-shot-first','burst-plants-first','burst-herbs-first','no-one-shot','score-first','mixed'].map(p=>byKey.get(`${b.id}|${p}`)?.score_mean||0);
     lines.push(`| ${b.label} | ${vals.map(v=>Math.round(v)).join(' | ')} |`);
@@ -250,7 +250,7 @@ function buildMarkdown({seedCount,aggregates,pairs,meta}){
   for(const p of pairs.slice(0,8))lines.push(`| ${p.a} ↔ ${p.b} | ${p.path_distance.toFixed(3)} | ${p.final_distance.toFixed(3)} |`);
   lines.push('','### 経路差が小さい組み合わせ','', '| 組み合わせ | 経路差 | 最終差 |','|---|---:|---:|');
   for(const p of [...pairs].sort((a,b)=>a.path_distance-b.path_distance).slice(0,5))lines.push(`| ${p.a} ↔ ${p.b} | ${p.path_distance.toFixed(3)} | ${p.final_distance.toFixed(3)} |`);
-  lines.push('','## 読み方','','- 終盤型は平均だけでなく、SET内S4–S6の伸びと好調seedでの上限を見る。','- 一時投入最優先が各SET能力で一貫して勝つなら、一時投入が万能化していないか確認する。','- 植物+12優先 / 草食+2優先を比較し、片方だけ極端に弱い・強い状態がないか確認する。','- 一時投入なしが常に勝つなら、一時投入が弱すぎないか確認する。','- 狙いビルドは「実際の通常3択」と「実際のSET2候補」から選ぶ。SET1能力だけ比較の軸として固定している。','- 最終状態が似ること自体は問題にせず、経路差と最終差を併記する。','- このランナーは数値を変更しない。');
+  lines.push('','## 読み方','','- 終盤型は平均だけでなく、SET内S4–S6の伸びと好調seedでの上限を見る。','- 一時投入最優先が各SET能力で一貫して勝つなら、一時投入が万能化していないか確認する。','- 植物+12優先 / 草食+3優先を比較し、片方だけ極端に弱い・強い状態がないか確認する。','- 一時投入なしが常に勝つなら、一時投入が弱すぎないか確認する。','- 狙いビルドは「実際の通常3択」と「実際のSET2候補」から選ぶ。SET1能力だけ比較の軸として固定している。','- 最終状態が似ること自体は問題にせず、経路差と最終差を併記する。','- このランナーは数値を変更しない。');
   return lines.join('\n');
 }
 
