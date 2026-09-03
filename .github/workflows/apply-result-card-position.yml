@@ -1,0 +1,49 @@
+name: Apply result card position
+on:
+  push:
+    branches:
+      - work/result-card-position-2026-09-04
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Verify base
+        run: test "$(git rev-parse HEAD)" = "8b4ead9f458d5c186da9e8c708d7033c32a090ef"
+      - name: Move result card into board and center it
+        shell: python
+        run: |
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          old_js="document.querySelector('.board-shell')?.append(result);"
+          new_js="document.querySelector('.board')?.append(result);"
+          old_css="#result.set-result-mode,#result.game-set-result-mode{align-items:flex-end!important;padding-top:8px!important;padding-bottom:14px!important}"
+          new_css="#result.set-result-mode,#result.game-set-result-mode{align-items:center!important;padding-top:8px!important;padding-bottom:8px!important}"
+          old_mobile="@media(max-width:390px){#result.set-result-mode,#result.game-set-result-mode{padding-top:6px!important;padding-bottom:10px!important}#set-result-next,#game-set-best{height:44px!important;min-height:44px!important;font-size:13.5px!important;line-height:42px!important}}"
+          new_mobile="@media(max-width:390px){#result.set-result-mode,#result.game-set-result-mode{padding-top:6px!important;padding-bottom:6px!important}#set-result-next,#game-set-best{height:44px!important;min-height:44px!important;font-size:13.5px!important;line-height:42px!important}}"
+          for old in (old_js,old_css,old_mobile):
+              if s.count(old)!=1:
+                  raise SystemExit(f'expected exactly one match: {old[:80]}')
+          s=s.replace(old_js,new_js).replace(old_css,new_css).replace(old_mobile,new_mobile)
+          p.write_text(s)
+      - name: Validate scope
+        run: |
+          test "$(git diff --name-only)" = "index.html"
+          git diff -- index.html
+          grep -Fq "document.querySelector('.board')?.append(result);" index.html
+          grep -Fq '#result.set-result-mode,#result.game-set-result-mode{align-items:center!important;padding-top:8px!important;padding-bottom:8px!important}' index.html
+          ! grep -Fq '#result.set-result-mode,#result.game-set-result-mode{align-items:flex-end!important' index.html
+      - name: Commit and push
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Raise SET and GAME SET result card'
+          git push origin HEAD:main
