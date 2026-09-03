@@ -4066,7 +4066,7 @@ function initializeUi(){
   document.querySelectorAll('#selection>.hint,#normal-selection>.hint,#second-set-selection>.hint').forEach(el=>el.hidden=true);
   const seedLabel=document.querySelector('label[for="seed"]');if(seedLabel)seedLabel.textContent='seed';const seedButton=document.querySelector('#seed-form button');if(seedButton)seedButton.textContent='候補を表示';
   $('set-summary').hidden=true;const scoreLabel=$('score-label');scoreLabel.classList.add('compact-score-label');label(scoreLabel,'得点');
-  const result=$('result');if(result&&!result.querySelector(':scope>.result-card')){const card=document.createElement('div');card.className='result-card';while(result.firstChild)card.append(result.firstChild);result.append(card);result.classList.add('result-overlay-panel');document.querySelector('.board-shell')?.append(result);}
+  const result=$('result');if(result&&!result.querySelector(':scope>.result-card')){const card=document.createElement('div');card.className='result-card';while(result.firstChild)card.append(result.firstChild);result.append(card);result.classList.add('result-overlay-panel');document.querySelector('.board')?.append(result);}
   label($('result-score-label'),'得点','TOTAL');const cards=document.querySelectorAll('.final-set-scores>div>span');label(cards[0],'得点','SET 1');label(cards[1],'得点','SET 2');
   const details=result?.querySelector('details'),summary=details?.querySelector(':scope>summary');if(summary){summary.textContent='詳細';details.addEventListener('toggle',()=>summary.textContent=details.open?'詳細を閉じる':'詳細');}
   $('replay').hidden=true;$('graph-detail-overlay').addEventListener('click',event=>{if(event.target===$('graph-detail-overlay'))toggleGraphDetails(false);});
@@ -4734,11 +4734,11 @@ featureStyle.textContent=`
 #result.set-result-mode .run-stage-set-head,#result.set-result-mode .run-stage-table tbody th{color:#c8d3dd}
 #result.set-result-mode .run-set-grid.set-result-single,#result.set-result-mode .run-stage-grid.set-result-single{grid-template-columns:1fr!important}
 #result.set-result-mode details>summary{color:#cbd6df}
-#result.set-result-mode,#result.game-set-result-mode{align-items:flex-end!important;padding-top:8px!important;padding-bottom:14px!important}
+#result.set-result-mode,#result.game-set-result-mode{align-items:center!important;padding-top:8px!important;padding-bottom:8px!important}
 #set-result-next,#game-set-best{box-sizing:border-box!important;width:100%!important;height:44px!important;min-height:44px!important;margin-top:10px!important;padding:0 14px!important;border:1px solid #818b95!important;border-radius:10px!important;background:linear-gradient(180deg,#2a3036 0%,#20262c 100%)!important;color:#eef2f5!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.10)!important;font-size:14px!important;font-weight:800!important;line-height:42px!important;letter-spacing:.02em!important}
 #result.set-result-mode details,#result.game-set-result-mode details{margin-top:12px!important;padding-top:8px!important;border-top:1px solid rgba(132,148,164,.28)!important}
 #result.set-result-mode details>summary{min-height:28px!important;padding:4px 2px!important;color:#9eabb7!important;font-size:9px!important;font-weight:650!important}
-@media(max-width:390px){#result.set-result-mode,#result.game-set-result-mode{padding-top:6px!important;padding-bottom:10px!important}#set-result-next,#game-set-best{height:44px!important;min-height:44px!important;font-size:13.5px!important;line-height:42px!important}}
+@media(max-width:390px){#result.set-result-mode,#result.game-set-result-mode{padding-top:6px!important;padding-bottom:6px!important}#set-result-next,#game-set-best{height:44px!important;min-height:44px!important;font-size:13.5px!important;line-height:42px!important}}
 .result-panel.result-overlay-panel .result-card{width:min(96%,680px)!important}
 #result-details.run-detail-layout{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:7px!important;margin:6px 0 2px!important}
 .run-detail-section{min-width:0;padding:7px;border:1px solid rgba(93,117,141,.26);border-radius:8px;background:rgba(9,16,24,.36)}.run-detail-section>h3{margin:0 0 5px;color:#edf4fb;font-size:9.5px}.run-detail-stages{grid-column:1/-1}.run-detail-meta{grid-column:1/-1}
