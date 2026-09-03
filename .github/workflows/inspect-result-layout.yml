@@ -1,0 +1,35 @@
+name: Inspect result layout
+on:
+  push:
+    branches:
+      - work/result-card-position-2026-09-04
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Inspect result and choice layout
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          s=Path('index.html').read_text()
+          lines=s.splitlines()
+          terms=['set-result','game-set','GAME SET','SET RESULT','choice','result-overlay','result-card','ability-choice']
+          hits=[]
+          for i,line in enumerate(lines):
+              low=line.lower()
+              if any(t.lower() in low for t in terms):
+                  hits.append(i)
+          merged=[]
+          for i in hits:
+              a=max(0,i-8); b=min(len(lines),i+11)
+              if merged and a <= merged[-1][1]+3:
+                  merged[-1]=(merged[-1][0],max(merged[-1][1],b))
+              else:
+                  merged.append((a,b))
+          for a,b in merged:
+              print(f'\n--- lines {a+1}-{b} ---')
+              for j in range(a,b): print(f'{j+1:05d}: {lines[j]}')
+          PY
