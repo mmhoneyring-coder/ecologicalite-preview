@@ -1,0 +1,57 @@
+name: Balance diagnostic runner
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - work/balance-diagnostic-runner-2026-09-04
+    paths:
+      - index.html
+      - tools/balance-diagnostics/**
+      - .github/workflows/balance-diagnostic-runner.yml
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Syntax check
+        run: node --check tools/balance-diagnostics/runner.mjs
+
+      - name: Smoke test
+        run: node tools/balance-diagnostics/runner.mjs --seeds=2 --out=/tmp/ecologicalite-balance-smoke
+
+      - name: Verify smoke outputs
+        run: |
+          test -s /tmp/ecologicalite-balance-smoke/SUMMARY.md
+          test -s /tmp/ecologicalite-balance-smoke/summary.json
+          test -s /tmp/ecologicalite-balance-smoke/runs.csv
+          test -s /tmp/ecologicalite-balance-smoke/stages.csv
+          test -s /tmp/ecologicalite-balance-smoke/choices.csv
+
+      - name: Run 30-seed diagnostic
+        run: node tools/balance-diagnostics/runner.mjs --seeds=30 --out=artifacts/balance-diagnostics
+
+      - name: Verify full outputs
+        run: |
+          test -s artifacts/balance-diagnostics/SUMMARY.md
+          test -s artifacts/balance-diagnostics/summary.json
+          test "$(($(wc -l < artifacts/balance-diagnostics/runs.csv)-1))" -eq 1200
+          test "$(($(wc -l < artifacts/balance-diagnostics/stages.csv)-1))" -eq 14400
+
+      - name: Upload diagnostic results
+        uses: actions/upload-artifact@v4
+        with:
+          name: balance-diagnostics-30-seeds
+          path: artifacts/balance-diagnostics
+          if-no-files-found: error
