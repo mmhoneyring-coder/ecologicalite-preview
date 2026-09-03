@@ -4210,7 +4210,7 @@ function selectSecondSet(){
   $('set-summary').textContent=`Set1完了：${formatScore(session.setScore())}点。通常能力5個を引き継ぎます。`;
   $('second-set-choices').replaceChildren(...session.setOffers().map(id=>{const b=document.createElement('button'),name=document.createElement('strong'),desc=document.createElement('span');b.type='button';b.className='choice';b.dataset.ability=id;name.textContent=SET_TEXT[id][0];desc.textContent=SET_TEXT[id][1];b.append(name,desc);b.onclick=()=>confirmAbilityChoice(b,()=>{session.beginSet(id);observation.reset();pointer=null;runStage();});return b;}));
 }
-const CHOICE_CONFIRM_MS=400;
+const CHOICE_CONFIRM_MS=200;
 let choiceConfirmTimer=0;
 function cancelChoiceConfirm(){
   if(choiceConfirmTimer){clearTimeout(choiceConfirmTimer);choiceConfirmTimer=0;}
