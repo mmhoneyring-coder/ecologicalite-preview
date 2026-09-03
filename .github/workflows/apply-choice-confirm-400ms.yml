@@ -1,0 +1,41 @@
+name: Apply choice confirmation 400ms
+on:
+  push:
+    branches:
+      - work/choice-confirm-400ms-2026-09-03
+    paths:
+      - .github/scripts/apply-choice-confirm-400ms.py
+      - .github/workflows/apply-choice-confirm-400ms.yml
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout patch source
+        uses: actions/checkout@v4
+        with:
+          ref: work/choice-confirm-400ms-2026-09-03
+      - name: Preserve patch script
+        run: cp .github/scripts/apply-choice-confirm-400ms.py /tmp/apply.py
+      - name: Checkout verified main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          clean: true
+      - name: Verify source commit
+        run: test "$(git rev-parse HEAD)" = "94aa8ee5cdfff0586e5697cbba5b1a70a72017ca"
+      - name: Apply patch
+        run: python /tmp/apply.py
+      - name: Validate patch
+        run: |
+          grep -q 'const CHOICE_CONFIRM_MS=400;' index.html
+          ! grep -q 'const CHOICE_CONFIRM_MS=500;' index.html
+          git diff --exit-code -- . ':!index.html'
+      - name: Commit to main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Shorten ability choice confirmation pause'
+          git push origin HEAD:main
