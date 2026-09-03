@@ -4208,19 +4208,37 @@ function start(ability){cancelAnimationFrame(raf);observation.reset();pointer=nu
 function selectSecondSet(){
   hideSetResultNext();document.body.classList.remove('ui-set-result');$('result').classList.remove('set-result-mode');$('result').hidden=true;$('normal-selection').hidden=true;$('second-set-selection').hidden=false;$('status').textContent='Set2能力選択待ち';heading($('second-set-selection'),'SET ABILITY',1);
   $('set-summary').textContent=`Set1完了：${formatScore(session.setScore())}点。通常能力5個を引き継ぎます。`;
-  $('second-set-choices').replaceChildren(...session.setOffers().map(id=>{const b=document.createElement('button'),name=document.createElement('strong'),desc=document.createElement('span');b.type='button';b.className='choice';b.dataset.ability=id;name.textContent=SET_TEXT[id][0];desc.textContent=SET_TEXT[id][1];b.append(name,desc);b.onclick=()=>{session.beginSet(id);observation.reset();pointer=null;runStage();};return b;}));
+  $('second-set-choices').replaceChildren(...session.setOffers().map(id=>{const b=document.createElement('button'),name=document.createElement('strong'),desc=document.createElement('span');b.type='button';b.className='choice';b.dataset.ability=id;name.textContent=SET_TEXT[id][0];desc.textContent=SET_TEXT[id][1];b.append(name,desc);b.onclick=()=>confirmAbilityChoice(b,()=>{session.beginSet(id);observation.reset();pointer=null;runStage();});return b;}));
+}
+const CHOICE_CONFIRM_MS=700;
+let choiceConfirmTimer=0;
+function cancelChoiceConfirm(){
+  if(choiceConfirmTimer){clearTimeout(choiceConfirmTimer);choiceConfirmTimer=0;}
+  document.querySelectorAll('.choice-confirm-selected,.choice-confirm-dimmed').forEach(el=>{
+    el.classList.remove('choice-confirm-selected','choice-confirm-dimmed');el.disabled=false;
+  });
+}
+function confirmAbilityChoice(button,action){
+  if(choiceConfirmTimer||!button)return;
+  const group=button.parentElement,buttons=[...(group?.querySelectorAll('.choice')||[])];
+  buttons.forEach(choice=>{
+    choice.disabled=true;
+    choice.classList.toggle('choice-confirm-selected',choice===button);
+    choice.classList.toggle('choice-confirm-dimmed',choice!==button);
+  });
+  choiceConfirmTimer=setTimeout(()=>{choiceConfirmTimer=0;action();},CHOICE_CONFIRM_MS);
 }
 function selectNormal(){
   if(session.phase!=='stage-result')return;
   $('result').hidden=true;$('normal-selection').hidden=false;$('status').textContent='通常能力選択待ち';heading($('normal-selection'),'NORMAL ABILITY',Math.min(6,session.stage+1));
   $('normal-choices').replaceChildren(...session.offers().map(id=>{const b=document.createElement('button'),name=document.createElement('strong'),stack=document.createElement('span'),desc=document.createElement('span'),ability=session.engine.NORMAL_ABILITIES[id],next=(session.state.normalStacks[id]||0)+1,text=normalText(ability.name,ability,session.engine.values.normal[id]);
     b.type='button';b.className='choice ui-normal-choice';b.dataset.ability=id;name.textContent=text.display;stack.className='choice-stack';stack.textContent=`${next}/${session.engine.values.normalStackCap}`;desc.className='choice-desc';desc.textContent=text.desc;
-    b.append(name,stack,desc);b.onclick=()=>{session.beginNext(id);pointer=null;runStage();};return b;}));
+    b.append(name,stack,desc);b.onclick=()=>confirmAbilityChoice(b,()=>{session.beginNext(id);pointer=null;runStage();});return b;}));
 }
 function choose(){
-  setBoardInspection(false);tapCycle=null;hideSetResultNext();document.body.classList.remove('ui-set-result');$('result').classList.remove('set-result-mode');cancelAnimationFrame(raf);observation.reset();pointer=null;clock=null;document.body.classList.remove('ui-game-set');seed=$('seed').value.trim()||DEFAULT_SEED;$('seed').value=seed;selected=null;session=createRunSession(api,base,seed);
+  cancelChoiceConfirm();setBoardInspection(false);tapCycle=null;hideSetResultNext();document.body.classList.remove('ui-set-result');$('result').classList.remove('set-result-mode');cancelAnimationFrame(raf);observation.reset();pointer=null;clock=null;document.body.classList.remove('ui-game-set');seed=$('seed').value.trim()||DEFAULT_SEED;$('seed').value=seed;selected=null;session=createRunSession(api,base,seed);
   $('selection').hidden=false;$('normal-selection').hidden=true;$('second-set-selection').hidden=true;$('active').hidden=true;$('result').hidden=true;$('back').hidden=true;$('status').textContent='能力選択待ち';label($('score-label'),'得点');
-  $('choices').replaceChildren(...offerAbilities(createEngine,base.values,seed).map(id=>{const b=document.createElement('button');b.type='button';b.className='choice';b.dataset.ability=id;b.setAttribute('aria-label',SET_TEXT[id][0]+'を選んで開始');const name=document.createElement('strong'),desc=document.createElement('span'),go=document.createElement('em');name.textContent=SET_TEXT[id][0];desc.textContent=SET_TEXT[id][1];go.textContent='この能力で始める →';b.append(name,desc,go);b.onclick=()=>start(id);return b;}));paint();
+  $('choices').replaceChildren(...offerAbilities(createEngine,base.values,seed).map(id=>{const b=document.createElement('button');b.type='button';b.className='choice';b.dataset.ability=id;b.setAttribute('aria-label',SET_TEXT[id][0]+'を選んで開始');const name=document.createElement('strong'),desc=document.createElement('span'),go=document.createElement('em');name.textContent=SET_TEXT[id][0];desc.textContent=SET_TEXT[id][1];go.textContent='この能力で始める →';b.append(name,desc,go);b.onclick=()=>confirmAbilityChoice(b,()=>start(id));return b;}));paint();
 }
 function createNewSeed(){
   const a=new Uint32Array(2);if(globalThis.crypto?.getRandomValues)globalThis.crypto.getRandomValues(a);else{a[0]=(Math.random()*0xffffffff)>>>0;a[1]=(Math.random()*0xffffffff)>>>0;}
@@ -4695,6 +4713,8 @@ window.addEventListener('resize',featureResize);
 const featureStyle=document.createElement('style');
 featureStyle.id='best-score-repro-feature-styles';
 featureStyle.textContent=`
+.choice.choice-confirm-selected:disabled{opacity:1!important;cursor:default;filter:brightness(1.22);border-color:var(--accent)!important;background:#244535!important;box-shadow:0 0 0 2px rgba(153,217,191,.18),0 0 18px rgba(153,217,191,.16);transform:translateY(-1px)}
+.choice.choice-confirm-dimmed:disabled{opacity:.34!important;cursor:default;filter:brightness(.62);transform:none}
 #best-score-overlay[hidden]{display:none!important}
 #best-score-overlay{position:fixed;inset:0;z-index:70;pointer-events:none}
 .best-score-card{position:fixed;z-index:2;padding:8px;border:1px solid rgba(91,116,141,.72);border-radius:10px;background:rgba(13,22,32,.93);box-shadow:0 12px 30px rgba(0,0,0,.3);pointer-events:auto;overflow:auto;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
