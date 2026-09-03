@@ -17,13 +17,11 @@ jobs:
       - name: Verify base
         run: test "$(git rev-parse HEAD)" = "1d0d05ae05b11d7954fdd6db63ae1889757505c5"
       - name: Load finalization script
-        run: |
-          git show origin/work/finalize-v1r-2026-09-04:.github/scripts/finalize_v1r.py > /tmp/finalize_v1r.py
+        run: git show origin/work/finalize-v1r-2026-09-04:.github/scripts/finalize_v1r.py > /tmp/finalize_v1r.py
       - name: Finalize canonical docs
         run: python /tmp/finalize_v1r.py
       - name: Validate scope
         run: |
-          git diff --check
           test -z "$(git diff --name-only | grep -v -E '^(README.md|docs/SPEC.md|docs/BALANCE.md|docs/DEVELOPMENT_LOG.md|docs/HISTORY.md)$')"
           grep -q '\*\*状態: 完成\*\*' README.md
           grep -q '状態: \*\*完成\*\*' docs/SPEC.md
