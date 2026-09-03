@@ -1,0 +1,176 @@
+name: Apply manual saved runs
+on:
+  push:
+    branches: [work/manual-saved-runs-trigger-2026-09-03]
+permissions:
+  contents: write
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout patch source
+        uses: actions/checkout@v4
+      - name: Save patch script
+        shell: bash
+        run: |
+          cat > /tmp/patch.py <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          def rep(old,new,label):
+              global s
+              n=s.count(old)
+              if n!=1:
+                  raise SystemExit(f'{label}: expected 1 occurrence, found {n}')
+              s=s.replace(old,new,1)
+
+          rep("const BEST_STORAGE_KEY=`ecologicalite.bestRuns.${BEST_SCORE_VERSION}`;\nconst BEST_LIMIT=5;\nconst REPRO_FX_MS=400;",
+              "const BEST_STORAGE_KEY=`ecologicalite.bestRuns.${BEST_SCORE_VERSION}`;\nconst MANUAL_STORAGE_KEY=`ecologicalite.savedRuns.${BEST_SCORE_VERSION}`;\nconst BEST_LIMIT=3;\nconst MANUAL_LIMIT=10;\nconst REPRO_FX_MS=400;",
+              'limits')
+
+          rep("const safeBestClear=()=>{\n  try{localStorage.removeItem(BEST_STORAGE_KEY);return true;}\n  catch(_error){return false;}\n};\nconst compactDate=iso=>{",
+              "const safeBestClear=()=>{\n  try{localStorage.removeItem(BEST_STORAGE_KEY);return true;}\n  catch(_error){return false;}\n};\nconst safeManualRead=()=>{\n  try{\n    const parsed=JSON.parse(localStorage.getItem(MANUAL_STORAGE_KEY)||'[]');\n    return Array.isArray(parsed)?parsed.filter(x=>x&&Number.isFinite(Number(x.score))).slice(0,MANUAL_LIMIT):[];\n  }catch(_error){return [];}\n};\nconst safeManualWrite=list=>{\n  try{localStorage.setItem(MANUAL_STORAGE_KEY,JSON.stringify(list.slice(0,MANUAL_LIMIT)));return true;}\n  catch(_error){return false;}\n};\nconst compactDate=iso=>{",
+              'manual storage')
+
+          rep("function returnToBestScores(){\n  const result=$('result');if(result)result.hidden=true;\n  renderBestScores(currentNewRecord);\n}\nfunction addDetailBack(){\n  clearDetailBack();\n  const b=document.createElement('button');b.id='best-detail-back';b.type='button';b.textContent='BEST SCOREへ戻る';\n  b.onclick=returnToBestScores;resultCard()?.append(b);\n}",
+              "function returnToBestScores(){\n  const result=$('result');if(result)result.hidden=true;\n  renderBestScores(currentNewRecord);\n}\nfunction returnToManualRuns(){\n  const result=$('result');if(result)result.hidden=true;\n  renderManualRuns();\n}\nfunction addDetailBack(text='BEST SCOREへ戻る',handler=returnToBestScores){\n  clearDetailBack();\n  const b=document.createElement('button');b.id='best-detail-back';b.type='button';b.textContent=text;\n  b.onclick=handler;resultCard()?.append(b);\n}",
+              'detail back')
+
+          rep("function renderSnapshotDetail(record,{saved=false,rank=null,current=false}={}){",
+              "function renderSnapshotDetail(record,{saved=false,rank=null,current=false,manual=false}={}){",
+              'detail signature')
+
+          rep("  if(saved||current){\n    const meta=detailSection('記録','run-detail-meta');\n    const grid=document.createElement('div');grid.className='run-meta-grid';\n    makeKV(grid,saved?'順位':'区分',saved?`#${rank||'—'}`:'今回スコア');\n    makeKV(grid,'日時',compactDate(record.completedAt));\n    makeKV(grid,'seed',record.seed||'—').classList.add('run-meta-seed');\n    meta.append(grid);root.append(meta);\n  }",
+              "  if(saved||current||manual){\n    const meta=detailSection('記録','run-detail-meta');\n    const grid=document.createElement('div');grid.className='run-meta-grid';\n    if(saved)makeKV(grid,'順位',`#${rank||'—'}`);\n    else makeKV(grid,'区分',manual?'保存したラン':'今回スコア');\n    makeKV(grid,manual?'保存日時':'日時',compactDate(manual?(record.savedAt||record.completedAt):record.completedAt));\n    makeKV(grid,'seed',record.seed||'—').classList.add('run-meta-seed');\n    meta.append(grid);root.append(meta);\n  }",
+              'detail meta')
+
+          rep("function applyResultHeader(record,{saved=false,rank=null,current=false}={}){",
+              "function applyResultHeader(record,{saved=false,rank=null,current=false,manual=false}={}){",
+              'header signature')
+
+          rep("  }else if(current){\n    resultSnapshotMode='current-score';heading.classList.add('best-detail-heading');heading.dataset.displayHeading='今回スコア';\n    heading.setAttribute('aria-label','今回スコア');\n  }else{",
+              "  }else if(current){\n    resultSnapshotMode='current-score';heading.classList.add('best-detail-heading');heading.dataset.displayHeading='今回スコア';\n    heading.setAttribute('aria-label','今回スコア');\n  }else if(manual){\n    resultSnapshotMode='manual';heading.classList.add('best-detail-heading');heading.dataset.displayHeading='保存したラン';\n    heading.setAttribute('aria-label','保存したラン');\n  }else{",
+              'manual header')
+
+          rep("function showCurrentScoreDetail(){\n  if(!session?.runDone)return;const record=buildRunSnapshot(session);\n  prepareResultDetailView();applyResultHeader(record,{current:true});renderSnapshotDetail(record,{current:true});\n  const details=resultCard()?.querySelector('details');if(details)details.open=true;\n  addDetailBack();\n}",
+              "function showManualRunDetail(record){\n  if(!record)return;\n  prepareResultDetailView();applyResultHeader(record,{manual:true});renderSnapshotDetail(record,{manual:true});\n  const details=resultCard()?.querySelector('details');if(details)details.open=true;\n  addDetailBack('保存したランへ戻る',returnToManualRuns);\n}\nfunction showCurrentScoreDetail(){\n  if(!session?.runDone)return;const record=buildRunSnapshot(session);\n  prepareResultDetailView();applyResultHeader(record,{current:true});renderSnapshotDetail(record,{current:true});\n  const details=resultCard()?.querySelector('details');if(details)details.open=true;\n  addDetailBack();\n}",
+              'manual detail')
+
+          old="""function renderBestScores(newRecord=currentNewRecord){
+  const overlay=ensureBestOverlay(),list=safeBestRead(),root=$('best-score-list'),tag=$('best-new-record'),currentRoot=$('best-current-score');
+  root.replaceChildren();currentRoot.replaceChildren();tag.textContent=newRecord?.isNew?`NEW RECORD #${newRecord.rank}`:'';
+  if(!list.length){
+    const empty=document.createElement('div');empty.className='best-empty';empty.textContent='記録はまだありません';root.append(empty);
+  }else list.forEach((record,index)=>root.append(makeBestScoreRow(record,index+1,{newRecord})));
+  if(session?.runDone){
+    const current=buildRunSnapshot(session),label=document.createElement('div');label.className='best-current-label';
+    label.textContent=newRecord?.rank?`今回スコア · BEST #${newRecord.rank}`:'今回スコア';
+    currentRoot.append(label,makeBestScoreRow(current,null,{current:true,newRecord}));
+  }
+  overlay.hidden=false;requestAnimationFrame(positionBestOverlay);
+}
+function hideBestScores(){const overlay=ensureBestOverlay();overlay.hidden=true;}
+"""
+          new="""function isManualSaved(record){return !!record&&safeManualRead().some(x=>x.fingerprint===record.fingerprint);}
+function saveCurrentRunManual(){
+  if(!session?.runDone)return;
+  const record=buildRunSnapshot(session),list=safeManualRead();
+  if(list.some(x=>x.fingerprint===record.fingerprint)){renderBestScores(currentNewRecord);return;}
+  if(list.length>=MANUAL_LIMIT){window.alert('保存できるランは10件までです。保存したランを削除してください。');return;}
+  record.savedAt=new Date().toISOString();list.unshift(record);
+  if(!safeManualWrite(list)){window.alert('保存に失敗しました。ブラウザの保存領域を確認してください。');return;}
+  renderBestScores(currentNewRecord);
+}
+function makeManualRunRow(record){
+  const wrap=document.createElement('div');wrap.className='manual-run-row';
+  const detail=document.createElement('button');detail.type='button';detail.className='manual-run-detail';
+  detail.innerHTML=`<span>${compactDate(record.savedAt||record.completedAt)}</span><strong>${formatScore(record.score)}</strong><small>詳細</small>`;
+  detail.onclick=()=>showManualRunDetail(record);
+  const del=document.createElement('button');del.type='button';del.className='manual-run-delete';del.textContent='削除';
+  del.onclick=()=>{if(!window.confirm('この保存したランを削除します。'))return;const list=safeManualRead().filter(x=>x.fingerprint!==record.fingerprint);safeManualWrite(list);renderManualRuns();};
+  wrap.append(detail,del);return wrap;
+}
+function renderManualRuns(){
+  const overlay=ensureBestOverlay(),root=$('best-score-list'),tag=$('best-new-record'),currentRoot=$('best-current-score'),list=safeManualRead();
+  const title=overlay.querySelector('.best-score-head strong');if(title)title.textContent='保存したラン';
+  root.replaceChildren();currentRoot.replaceChildren();tag.textContent=`${list.length} / ${MANUAL_LIMIT}`;
+  if(!list.length){const empty=document.createElement('div');empty.className='best-empty';empty.textContent='保存したランはありません';root.append(empty);}
+  else list.forEach(record=>root.append(makeManualRunRow(record)));
+  const back=document.createElement('button');back.type='button';back.className='saved-runs-back';back.textContent='BEST SCOREへ戻る';back.onclick=()=>renderBestScores(currentNewRecord);currentRoot.append(back);
+  overlay.hidden=false;requestAnimationFrame(positionBestOverlay);
+}
+function renderBestScores(newRecord=currentNewRecord){
+  const overlay=ensureBestOverlay(),list=safeBestRead(),root=$('best-score-list'),tag=$('best-new-record'),currentRoot=$('best-current-score');
+  const title=overlay.querySelector('.best-score-head strong');if(title)title.textContent='BEST SCORE';
+  root.replaceChildren();currentRoot.replaceChildren();tag.textContent=newRecord?.isNew?`NEW RECORD #${newRecord.rank}`:'';
+  if(!list.length){
+    const empty=document.createElement('div');empty.className='best-empty';empty.textContent='記録はまだありません';root.append(empty);
+  }else list.forEach((record,index)=>root.append(makeBestScoreRow(record,index+1,{newRecord})));
+  if(session?.runDone){
+    const current=buildRunSnapshot(session),label=document.createElement('div');label.className='best-current-label';
+    label.textContent=newRecord?.rank?`今回スコア · BEST #${newRecord.rank}`:'今回スコア';
+    const actions=document.createElement('div');actions.className='best-current-actions';
+    const save=document.createElement('button');save.type='button';save.className='current-run-save';save.textContent=isManualSaved(current)?'保存済み':'保存';save.disabled=isManualSaved(current);save.onclick=saveCurrentRunManual;
+    const saved=document.createElement('button');saved.type='button';saved.className='saved-runs-open';saved.textContent=`保存したラン (${safeManualRead().length})`;saved.onclick=renderManualRuns;
+    actions.append(save,saved);currentRoot.append(label,makeBestScoreRow(current,null,{current:true,newRecord}),actions);
+  }
+  overlay.hidden=false;requestAnimationFrame(positionBestOverlay);
+}
+function hideBestScores(){const overlay=ensureBestOverlay();overlay.hidden=true;}
+"""
+          rep(old,new,'best/manual renderer')
+
+          rep("details.innerHTML='<summary>記録</summary><div class=\"info-content\"><div class=\"info-sub\"><h3>BEST SCORE</h3><p>このブラウザ・端末に上位5件を保存します。</p><button id=\"best-score-reset\" type=\"button\" class=\"best-score-reset\">BEST SCOREを削除</button></div></div>';",
+              "details.innerHTML='<summary>記録</summary><div class=\"info-content\"><div class=\"info-sub\"><h3>BEST SCORE</h3><p>このブラウザ・端末に上位3件を自動保存します。残したいランはBEST SCORE画面から別枠で最大10件まで手動保存できます。</p><button id=\"best-score-reset\" type=\"button\" class=\"best-score-reset\">BEST SCOREを削除</button></div></div>';",
+              'info text')
+          rep("if(!window.confirm('BEST SCOREの記録5件を削除します。元に戻せません。'))return;",
+              "if(!window.confirm('BEST SCOREの記録3件を削除します。元に戻せません。'))return;",
+              'reset confirm')
+
+          rep(".best-current-score{margin-top:6px;padding-top:6px;border-top:1px solid rgba(126,145,164,.18)}.best-current-label{margin:0 2px 4px;color:#72869a;font-size:7px;font-weight:650;letter-spacing:.02em}.best-current-row{border-color:rgba(64,86,111,.58);background:rgba(17,29,43,.82)}",
+              ".best-current-score{margin-top:6px;padding-top:6px;border-top:1px solid rgba(126,145,164,.18)}.best-current-label{margin:0 2px 4px;color:#72869a;font-size:7px;font-weight:650;letter-spacing:.02em}.best-current-row{border-color:rgba(64,86,111,.58);background:rgba(17,29,43,.82)}.best-current-actions{display:grid;grid-template-columns:.72fr 1.28fr;gap:4px;margin-top:4px}.best-current-actions button,.saved-runs-back{min-height:26px;padding:3px 7px;border-radius:7px;border:1px solid rgba(64,86,111,.68);background:rgba(18,31,46,.9);color:#cbd8e5;font-size:8px}.best-current-actions button:disabled{opacity:.55;cursor:default}.manual-run-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px;align-items:stretch}.manual-run-detail{min-width:0;min-height:31px;padding:3px 6px;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;align-items:center;border:1px solid rgba(64,86,111,.75);border-radius:7px;background:rgba(21,35,53,.92);text-align:left}.manual-run-detail span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#8295a9;font-size:7px}.manual-run-detail strong{color:#edf4fb;font-size:12px;font-variant-numeric:tabular-nums}.manual-run-detail small{color:#99d9bf;font-size:7px}.manual-run-delete{min-width:38px;padding:0 7px;border:1px solid rgba(125,76,88,.7);border-radius:7px;background:rgba(48,28,35,.85);color:#d9aeb8;font-size:7px}.saved-runs-back{width:100%;margin-top:2px}",
+              'manual css')
+
+          # Manual list rows use the same spacing as BEST rows.
+          rep(".best-score-list{display:grid;gap:4px}.best-score-row{",
+              ".best-score-list{display:grid;gap:4px}.best-score-row{",
+              'css anchor check')
+
+          p.write_text(s)
+          PY
+      - name: Checkout and verify main
+        shell: bash
+        run: |
+          git fetch origin main
+          git checkout -B apply origin/main
+          test "$(git rev-parse HEAD)" = "afbb533b315da4e0512d8f271d7259117a9eb653"
+      - name: Apply patch
+        run: python /tmp/patch.py
+      - name: Validate
+        shell: bash
+        run: |
+          test "$(git diff --name-only)" = "index.html"
+          git diff --check
+          grep -q "const BEST_LIMIT=3;" index.html
+          grep -q "const MANUAL_LIMIT=10;" index.html
+          grep -q "保存できるランは10件までです。保存したランを削除してください。" index.html
+          grep -q "保存したランへ戻る" index.html
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          s=Path('index.html').read_text()
+          scripts=re.findall(r'<script(?: [^>]*)?>(.*?)</script>',s,re.S)
+          js=next(x for x in scripts if 'BEGIN EcologicaLite BEST SCORE' in x)
+          Path('/tmp/runtime.js').write_text(js)
+          PY
+          node --check /tmp/runtime.js
+      - name: Commit to main
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add manual saved runs and keep BEST top 3"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
