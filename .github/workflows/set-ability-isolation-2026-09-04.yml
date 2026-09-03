@@ -1,0 +1,145 @@
+name: SET ability isolation experiment
+
+on:
+  push:
+    branches:
+      - experiment/burst-herbs-3-2026-09-04
+    paths:
+      - .github/workflows/set-ability-isolation-2026-09-04.yml
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Run SET-only comparison
+        run: |
+          cat > /tmp/set-ability-isolation.mjs <<'NODE'
+          import fs from 'node:fs';
+          import vm from 'node:vm';
+
+          const html=fs.readFileSync('index.html','utf8');
+          const match=html.match(/<script id="v1r-runtime">([\s\S]*?)<\/script>/);
+          if(!match)throw new Error('runtime not found');
+          const sandbox={console}; sandbox.globalThis=sandbox; vm.createContext(sandbox);
+          vm.runInContext(`${match[1]}\n;globalThis.__V1R__=V1R;`,sandbox,{timeout:10000});
+          const V1R=sandbox.__V1R__;
+          const {createEngine}=V1R['./core.mjs'];
+          const {pairedWorld,worldState}=V1R['./pairing.mjs'];
+          const {loadConfig}=V1R['./environment.mjs'];
+          const base=await Promise.resolve(loadConfig());
+          const api={createEngine,pairedWorld,worldState};
+          const engine=createEngine(base.values);
+
+          const SETS=[
+            ['S_STAGE_TIME','時間延長'],
+            ['S_HERB_PLANT_SENSE','植物察知'],
+            ['S_HERB_DANGER_SENSE','危険察知'],
+            ['S_PLANT_LIFECYCLE','植物の周期'],
+            ['S_EATEN_PLANT_DORMANCY','被食植物の再生'],
+            ['S_PREDATION_CORPSE','捕食の還元'],
+            ['S_DOUBLE_BIRTH','双子の誕生'],
+            ['S_CARN_HIGH_HP_SENSE','肉食の獲物察知'],
+          ];
+          const PRIORITY=['N_ACTIVITY_PLANTS','N_HERB_GAIN','N_CARN_GAIN','N_HERB_CHILD','N_CARN_CHILD','N_BIRTH_SCORE','N_FEED_SCORE','N_SURV_SCORE','N_HERB_SCORE','N_CARN_SCORE','N_BURST_PLANTS','N_BURST_HERBS'];
+          const rank=id=>{const i=PRIORITY.indexOf(id);return i<0?999:i};
+          const choose=offers=>[...offers].sort((a,b)=>rank(a)-rank(b))[0];
+          const sum=(a,fn)=>a.reduce((n,x)=>n+Number(fn(x)||0),0);
+          const mean=a=>a.reduce((x,y)=>x+y,0)/a.length;
+          const pct=(a,p)=>{const s=[...a].sort((x,y)=>x-y);return s[Math.round((s.length-1)*p)]};
+          const seeds=Array.from({length:100},(_,i)=>`${base.worldSeedPrefix||'v1r-individual-363|run:'}${i+1}`);
+          const rows=[]; const choiceSignatures=new Map(); let offerMismatch=0,choiceMismatch=0;
+
+          for(const [anchor,label] of SETS){
+            if(!engine.SET_IDS.includes(anchor)) throw new Error(`unknown SET ${anchor}`);
+            for(const seed of seeds){
+              const session=V1R['./set1-session.mjs'].createRunSession(api,base,seed,anchor,2);
+              const choices=[]; const offersAll=[];
+              while(true){
+                if(session.phase==='running'){session.step();continue;}
+                if(session.phase==='stage-result'){
+                  const offers=session.offers(); const chosen=choose(offers);
+                  offersAll.push(offers.join('|')); choices.push(chosen);
+                  session.beginNext(chosen); continue;
+                }
+                if(session.phase==='set-result')break;
+                throw new Error(`phase ${session.phase}`);
+              }
+              const sigKey=seed;
+              const offerSig=offersAll.join(' / '), choiceSig=choices.join('|');
+              if(!choiceSignatures.has(sigKey)) choiceSignatures.set(sigKey,{offerSig,choiceSig,label});
+              else {
+                const ref=choiceSignatures.get(sigKey);
+                if(ref.offerSig!==offerSig)offerMismatch++;
+                if(ref.choiceSig!==choiceSig)choiceMismatch++;
+              }
+              const rs=session.results.filter(r=>r.set===1);
+              const final=rs.at(-1);
+              rows.push({
+                seed,anchor,label,choiceSig,
+                score:sum(rs,r=>r.score.total),
+                final_plants:final.counts.plants,final_herbs:final.counts.herbs,final_carns:final.counts.carns,
+                plant_eaten:sum(rs,r=>r.events.plantEaten),herb_eaten:sum(rs,r=>r.events.herbEaten),
+                herb_births:sum(rs,r=>r.events.herbBirths),carn_births:sum(rs,r=>r.events.carnBirths),
+                herb_natural_deaths:sum(rs,r=>r.events.herbNaturalDeaths),carn_natural_deaths:sum(rs,r=>r.events.carnNaturalDeaths),
+                activity_plants:sum(rs,r=>r.events.activityPlantsCreated),corpse_plants:sum(rs,r=>r.events.corpsePlantsCreated),
+                lifecycle_seeds:sum(rs,r=>r.events.lifecycleSeedsCreated),
+                eaten_regrow:sum(rs,r=>r.events.eatenPlantDormancyRegrow),plant_regrown:sum(rs,r=>r.events.plantRegrown),
+                stage_scores:rs.map(r=>r.score.total),stage_plants:rs.map(r=>r.counts.plants),stage_herbs:rs.map(r=>r.counts.herbs),stage_carns:rs.map(r=>r.counts.carns)
+              });
+            }
+          }
+
+          if(offerMismatch||choiceMismatch)throw new Error(`normal choices not isolated: offers=${offerMismatch} choices=${choiceMismatch}`);
+          const aggs=SETS.map(([anchor,label])=>{
+            const x=rows.filter(r=>r.anchor===anchor);
+            const m=k=>mean(x.map(r=>r[k]));
+            return {anchor,label,n:x.length,score:m('score'),p10:pct(x.map(r=>r.score),.1),p90:pct(x.map(r=>r.score),.9),
+              final_plants:m('final_plants'),final_herbs:m('final_herbs'),final_carns:m('final_carns'),plant_eaten:m('plant_eaten'),herb_eaten:m('herb_eaten'),
+              herb_births:m('herb_births'),carn_births:m('carn_births'),herb_natural_deaths:m('herb_natural_deaths'),activity_plants:m('activity_plants'),corpse_plants:m('corpse_plants'),lifecycle_seeds:m('lifecycle_seeds'),eaten_regrow:m('eaten_regrow'),plant_regrown:m('plant_regrown'),
+              stage_scores:Array.from({length:6},(_,i)=>mean(x.map(r=>r.stage_scores[i]))),stage_plants:Array.from({length:6},(_,i)=>mean(x.map(r=>r.stage_plants[i]))),stage_herbs:Array.from({length:6},(_,i)=>mean(x.map(r=>r.stage_herbs[i]))),stage_carns:Array.from({length:6},(_,i)=>mean(x.map(r=>r.stage_carns[i]))) };
+          }).sort((a,b)=>b.score-a.score);
+
+          const byAnchor=Object.fromEntries(aggs.map(a=>[a.anchor,a]));
+          const eaten=byAnchor.S_EATEN_PLANT_DORMANCY;
+          const pairWins=SETS.filter(([a])=>a!=='S_EATEN_PLANT_DORMANCY').map(([a,label])=>{
+            let w=0,t=0,l=0,delta=[];
+            for(const seed of seeds){
+              const x=rows.find(r=>r.anchor==='S_EATEN_PLANT_DORMANCY'&&r.seed===seed).score;
+              const y=rows.find(r=>r.anchor===a&&r.seed===seed).score;
+              delta.push(x-y); if(x>y)w++; else if(x<y)l++; else t++;
+            }
+            return {vs:label,wins:w,ties:t,losses:l,mean_delta:mean(delta)};
+          }).sort((a,b)=>b.mean_delta-a.mean_delta);
+
+          fs.mkdirSync('artifacts/set-ability-isolation',{recursive:true});
+          fs.writeFileSync('artifacts/set-ability-isolation/rows.json',JSON.stringify(rows,null,2));
+          fs.writeFileSync('artifacts/set-ability-isolation/summary.json',JSON.stringify({sourceCommit:process.env.GITHUB_SHA,seeds:100,offerMismatch,choiceMismatch,priority:PRIORITY,aggregates:aggs,eatenPlantPairwise:pairWins},null,2));
+          const lines=['# SET能力 単独比較','',`- seed: 100`,`- 通常能力候補・選択の不一致: offers ${offerMismatch} / choices ${choiceMismatch}`,'- 比較範囲: SET1 STAGE1〜6のみ','- 通常能力: 全SET能力で同一の固定優先順位','','## 結果','','| SET能力 | 平均得点 | P10–P90 | 最終 植/草/肉 | 摂食 | 捕食 | 草食繁殖 | 肉食繁殖 | 草食自然死 | 活動植物 | 死体植物 | 周期種子 | 被食再生 |','|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|'];
+          for(const a of aggs)lines.push(`| ${a.label} | ${Math.round(a.score)} | ${Math.round(a.p10)}–${Math.round(a.p90)} | ${a.final_plants.toFixed(1)}/${a.final_herbs.toFixed(1)}/${a.final_carns.toFixed(1)} | ${a.plant_eaten.toFixed(1)} | ${a.herb_eaten.toFixed(1)} | ${a.herb_births.toFixed(1)} | ${a.carn_births.toFixed(1)} | ${a.herb_natural_deaths.toFixed(2)} | ${a.activity_plants.toFixed(1)} | ${a.corpse_plants.toFixed(1)} | ${a.lifecycle_seeds.toFixed(1)} | ${a.eaten_regrow.toFixed(1)} |`);
+          lines.push('','## 被食植物の再生：同seed得点比較','','| 比較相手 | 勝–分–敗 | 平均得点差 |','|---|---:|---:|');
+          for(const p of pairWins)lines.push(`| ${p.vs} | ${p.wins}–${p.ties}–${p.losses} | ${p.mean_delta>=0?'+':''}${Math.round(p.mean_delta)} |`);
+          lines.push('','## STAGE別平均得点','','| SET能力 | S1 | S2 | S3 | S4 | S5 | S6 |','|---|---:|---:|---:|---:|---:|---:|');
+          for(const a of aggs)lines.push(`| ${a.label} | ${a.stage_scores.map(v=>Math.round(v)).join(' | ')} |`);
+          fs.writeFileSync('artifacts/set-ability-isolation/REPORT.md',lines.join('\n'));
+          console.log(lines.join('\n'));
+          NODE
+          node /tmp/set-ability-isolation.mjs
+
+      - name: Upload results
+        uses: actions/upload-artifact@v4
+        with:
+          name: set-ability-isolation-100seeds
+          path: artifacts/set-ability-isolation
