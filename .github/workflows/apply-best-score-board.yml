@@ -1,0 +1,63 @@
+name: Apply BEST SCORE board layout
+
+on:
+  push:
+    branches:
+      - work/best-score-board-trigger-2026-09-03
+    paths:
+      - .github/workflows/apply-best-score-board.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout patch source
+        uses: actions/checkout@v4
+        with:
+          ref: work/best-score-board-trigger-2026-09-03
+          fetch-depth: 0
+
+      - name: Save patch script
+        run: cp .github/scripts/apply-best-score-board.py /tmp/apply-best-score-board.py
+
+      - name: Checkout and verify main
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+          test "$(git rev-parse HEAD)" = "b8712407589c4a08df9f2d39720b00e3e44ae283"
+
+      - name: Apply patch
+        run: python /tmp/apply-best-score-board.py
+
+      - name: Validate
+        run: |
+          git diff --check
+          test "$(git diff --name-only)" = "index.html"
+          grep -q "button.textContent='BEST SCORE'" index.html
+          grep -q "b.textContent='BEST SCOREへ戻る'" index.html
+          grep -q "今回スコア · BEST #" index.html
+          grep -q "best-current-score" index.html
+          grep -q "board=document.querySelector('.board')" index.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          text=Path('index.html').read_text(encoding='utf-8')
+          assert "renderBestScores(outcome)" not in text
+          assert "if(session?.runDone){recordCompletedRun();hideBestScores();showGameSetBestButton();}" in text
+          assert "button.onclick=()=>{const result=$('result');if(result)result.hidden=true;renderBestScores(currentNewRecord);};" in text
+          m=re.search(r'<script id="v1r-runtime">(.*?)</script>',text,re.S)
+          assert m
+          Path('/tmp/v1r-runtime.js').write_text(m.group(1),encoding='utf-8')
+          PY
+          node --check /tmp/v1r-runtime.js
+
+      - name: Commit to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Move BEST SCORE flow onto board"
+          git push origin HEAD:main
