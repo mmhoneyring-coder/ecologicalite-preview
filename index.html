@@ -3999,7 +3999,7 @@ const {bindAnimalPointer}=V1R["./pointer-input.mjs"];
 const $=id=>document.getElementById(id),api={createEngine,pairedWorld,worldState};
 let base,images,session,clock,raf=0,selected=null,seed=DEFAULT_SEED,speed=1,paused=false;
 Object.defineProperty(window,'__v1rSession',{configurable:true,get:()=>session});
-const observation=new AnimalObservation();let pointer=null,drawn=[];
+const observation=new AnimalObservation();let pointer=null,drawn=[],abilityInspecting=false,tapCycle=null,inspectReturnButton=null;
 const mobileQuery=matchMedia('(max-width:639px)'),desktopQuery=matchMedia('(min-width:1024px)');let responsiveLayoutState=null,abilityPopoverAnchor=null;
 
 const number=n=>Number(n.toFixed(2)).toLocaleString('ja-JP');
@@ -4093,6 +4093,62 @@ function setResponsiveLayout(){
   if(!responsiveLayoutState)responsiveLayoutState=captureResponsiveLayout();const s=responsiveLayoutState;if(!s)return;if(desktopQuery.matches)enterDesktopLayout(s);else if(mobileQuery.matches)enterMobileLayout(s);else if(s.mode!=='base')restoreResponsiveLayout(s);
 }
 
+function activeAbilitySelection(){
+  return !$('selection').hidden||!$('normal-selection').hidden||!$('second-set-selection').hidden;
+}
+function ensureInspectReturnButton(){
+  if(inspectReturnButton)return inspectReturnButton;
+  const board=$('field').closest('.board'),button=document.createElement('button');
+  button.type='button';button.className='selection-return';button.textContent='選択に戻る';button.hidden=true;button.setAttribute('aria-label','能力選択に戻る');
+  button.onclick=e=>{e.preventDefault();e.stopPropagation();setBoardInspection(false);};
+  board.append(button);inspectReturnButton=button;return button;
+}
+function setBoardInspection(active){
+  const overlay=document.querySelector('.ability-overlay'),button=ensureInspectReturnButton();
+  abilityInspecting=Boolean(active&&activeAbilitySelection());
+  overlay?.classList.toggle('is-board-inspection',abilityInspecting);button.hidden=!abilityInspecting;pointer=null;
+  if(session)observe();
+}
+function installSelectionInspectionUi(){
+  if(!document.getElementById('selection-inspection-styles')){
+    const style=document.createElement('style');style.id='selection-inspection-styles';style.textContent=`
+      .ability-overlay.is-board-inspection{background:transparent!important;pointer-events:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+      .ability-overlay.is-board-inspection .overlay-inner{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+      .selection-return{position:absolute;left:6px;top:6px;z-index:14;min-height:30px;padding:0 10px;border:1px solid rgba(117,181,156,.82);border-radius:999px;background:rgba(12,25,33,.9);color:#dff8ee;font-size:10px;font-weight:700;line-height:28px;box-shadow:0 4px 14px rgba(0,0,0,.28);touch-action:manipulation}
+      .selection-return[hidden]{display:none!important}
+      @media(max-width:390px){.selection-return{left:5px;top:5px;min-height:28px;padding:0 9px;font-size:9px;line-height:26px}}
+    `;document.head.append(style);
+  }
+  const overlay=document.querySelector('.ability-overlay');
+  if(overlay&&!overlay.dataset.inspectBound){
+    overlay.dataset.inspectBound='1';
+    overlay.addEventListener('click',e=>{if(e.target===overlay&&activeAbilitySelection())setBoardInspection(true);});
+  }
+  ensureInspectReturnButton();
+}
+function fieldPoint(clientX,clientY){
+  const field=$('field'),r=field.getBoundingClientRect();
+  if(!r.width||!r.height)return null;
+  return {x:(clientX-r.left)*field.clientWidth/r.width,y:(clientY-r.top)*field.clientHeight/r.height};
+}
+function tapCandidates(clientX,clientY){
+  const p=fieldPoint(clientX,clientY);if(!p||!session)return [];
+  const field=$('field'),cell=field.clientWidth/Math.max(1,Number(session.cfg?.cols)||1),pad=Math.max(3,cell*.3),hits=[];
+  for(let i=drawn.length-1;i>=0;i--){
+    const d=drawn[i],r=d.rect;
+    if(p.x<r.x-pad||p.y<r.y-pad||p.x>=r.x+r.w+pad||p.y>=r.y+r.h+pad)continue;
+    const direct=hitAnimal([d],images,p.x,p.y)?2:(p.x>=r.x&&p.y>=r.y&&p.x<r.x+r.w&&p.y<r.y+r.h?1:0),cx=r.x+r.w/2,cy=r.y+r.h/2;
+    hits.push({d,direct,dist:(p.x-cx)*(p.x-cx)+(p.y-cy)*(p.y-cy),order:i});
+  }
+  hits.sort((a,b)=>b.direct-a.direct||a.dist-b.dist||b.order-a.order);
+  return hits.map(hit=>hit.d);
+}
+function tapAnimal(clientX,clientY){
+  const candidates=tapCandidates(clientX,clientY);if(!candidates.length){tapCycle=null;return null;}
+  const ids=candidates.map(d=>`${d.type}:${d.id}`),now=performance.now(),same=tapCycle&&now-tapCycle.at<1600&&Math.hypot(clientX-tapCycle.x,clientY-tapCycle.y)<=16&&ids.length===tapCycle.ids.length&&ids.every((id,i)=>id===tapCycle.ids[i]);
+  const index=same?(tapCycle.index+1)%candidates.length:0;
+  tapCycle={x:clientX,y:clientY,ids,index,at:now};return candidates[index];
+}
 function hovered(){if(!pointer)return null;const r=$('field').getBoundingClientRect();return hitAnimal(drawn,images,(pointer.x-r.left)*$('field').clientWidth/r.width,(pointer.y-r.top)*$('field').clientHeight/r.height);}
 function observe(){
   const target=observation.resolve(session.world,session.effective.cfg,hovered()),el=$('animal-hp'),species=$('animal-species'),mobileSpecies=el.querySelector('.selected-species-icon'),bar=el.querySelector('.selected-hp-bar>i'),speciesClass=target?(target.type==='herb'?'herb-icon':'carn-icon'):'none-icon';
@@ -4147,7 +4203,7 @@ function finish(){
   renderResultDetails();$('replay').hidden=true;
 }
 function frame(now){if(paused||!clock)return;if(clock.advance(now))paint();if(session.done){paint();paused=false;finish();return;}raf=requestAnimationFrame(frame);}
-function runStage(){paused=false;document.body.classList.remove('ui-game-set');clock=new FixedClock(session,performance.now(),speed);$('normal-selection').hidden=true;$('second-set-selection').hidden=true;$('result').hidden=true;$('active').hidden=false;$('status').textContent=`Set${session.set} Stage${session.stage}観測中`;$('ability-name').textContent=session.state.setRewards.map(id=>SET_TEXT[id][0]).join(' ＋ ');$('ability-description').textContent=session.state.setRewards.map(id=>SET_TEXT[id][1]).join(' / ');paint();raf=requestAnimationFrame(frame);}
+function runStage(){tapCycle=null;setBoardInspection(false);paused=false;document.body.classList.remove('ui-game-set');clock=new FixedClock(session,performance.now(),speed);$('normal-selection').hidden=true;$('second-set-selection').hidden=true;$('result').hidden=true;$('active').hidden=false;$('status').textContent=`Set${session.set} Stage${session.stage}観測中`;$('ability-name').textContent=session.state.setRewards.map(id=>SET_TEXT[id][0]).join(' ＋ ');$('ability-description').textContent=session.state.setRewards.map(id=>SET_TEXT[id][1]).join(' / ');paint();raf=requestAnimationFrame(frame);}
 function start(ability){cancelAnimationFrame(raf);observation.reset();pointer=null;selected=ability;session=createRunSession(api,base,seed,ability);$('selection').hidden=true;$('back').hidden=false;runStage();}
 function selectSecondSet(){
   $('result').hidden=true;$('normal-selection').hidden=true;$('second-set-selection').hidden=false;$('status').textContent='Set2能力選択待ち';heading($('second-set-selection'),'SET ABILITY',1);
@@ -4162,7 +4218,7 @@ function selectNormal(){
     b.append(name,stack,desc);b.onclick=()=>{session.beginNext(id);pointer=null;runStage();};return b;}));
 }
 function choose(){
-  cancelAnimationFrame(raf);observation.reset();pointer=null;clock=null;document.body.classList.remove('ui-game-set');seed=$('seed').value.trim()||DEFAULT_SEED;$('seed').value=seed;selected=null;session=createRunSession(api,base,seed);
+  setBoardInspection(false);tapCycle=null;cancelAnimationFrame(raf);observation.reset();pointer=null;clock=null;document.body.classList.remove('ui-game-set');seed=$('seed').value.trim()||DEFAULT_SEED;$('seed').value=seed;selected=null;session=createRunSession(api,base,seed);
   $('selection').hidden=false;$('normal-selection').hidden=true;$('second-set-selection').hidden=true;$('active').hidden=true;$('result').hidden=true;$('back').hidden=true;$('status').textContent='能力選択待ち';label($('score-label'),'得点');
   $('choices').replaceChildren(...offerAbilities(createEngine,base.values,seed).map(id=>{const b=document.createElement('button');b.type='button';b.className='choice';b.dataset.ability=id;b.setAttribute('aria-label',SET_TEXT[id][0]+'を選んで開始');const name=document.createElement('strong'),desc=document.createElement('span'),go=document.createElement('em');name.textContent=SET_TEXT[id][0];desc.textContent=SET_TEXT[id][1];go.textContent='この能力で始める →';b.append(name,desc,go);b.onclick=()=>start(id);return b;}));paint();
 }
@@ -4532,14 +4588,14 @@ featureStyle.textContent=`
 document.head.append(featureStyle);
 /* END EcologicaLite BEST SCORE + reproduction visual feature */
 
-try {base=await loadConfig();images=await loadImages(assetSources);initializeUi();setResponsiveLayout();bindAbilityTips();
+try {base=await loadConfig();images=await loadImages(assetSources);initializeUi();installSelectionInspectionUi();setResponsiveLayout();bindAbilityTips();
   bindAnimalPointer($('field'),{
     hit:(x,y)=>{pointer={x,y};return hovered();},hover:(x,y)=>{pointer={x,y};observe();},
-    select:target=>{observation.pin(target);pointer=null;paint();},clearHover:()=>{pointer=null;observe();}
+    select:target=>{const chosen=pointer?tapAnimal(pointer.x,pointer.y):target;if(chosen)observation.pin(chosen);pointer=null;paint();},clearHover:()=>{pointer=null;observe();}
   });
   $('play-toggle').onclick=()=>setPaused(!paused);
   $('speed-cycle').onclick=cycleSpeed;
-  $('unpin').onclick=()=>{observation.reset();paint();};$('copy-results').onclick=copyResults;$('graph-detail').onclick=()=>toggleGraphDetails();$('graph-detail-close').onclick=()=>toggleGraphDetails(false);$('spec-open').onclick=()=>toggleSpec(true);$('spec-close').onclick=()=>toggleSpec(false);window.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('spec-overlay').hidden)toggleSpec(false);else if(!$('graph-detail-overlay').hidden)toggleGraphDetails(false);}});window.addEventListener('blur',()=>{pointer=null;if(session)observe();});
+  $('unpin').onclick=()=>{tapCycle=null;observation.reset();paint();};$('copy-results').onclick=copyResults;$('graph-detail').onclick=()=>toggleGraphDetails();$('graph-detail-close').onclick=()=>toggleGraphDetails(false);$('spec-open').onclick=()=>toggleSpec(true);$('spec-close').onclick=()=>toggleSpec(false);window.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('spec-overlay').hidden)toggleSpec(false);else if(!$('graph-detail-overlay').hidden)toggleGraphDetails(false);}});window.addEventListener('blur',()=>{pointer=null;if(session)observe();});
   $('seed-form').onsubmit=e=>{e.preventDefault();choose();};
   $('back').onclick=()=>{if(selected!==null&&!window.confirm('同じseedでSET1からやり直しますか？'))return;choose();};
   $('new-run').onclick=()=>{if(selected!==null&&!window.confirm('新しいseedで最初から始めますか？'))return;$('seed').value=createNewSeed();choose();};
