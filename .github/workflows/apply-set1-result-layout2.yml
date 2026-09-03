@@ -26,27 +26,29 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-          import hashlib,re
+          import hashlib
 
-          path=Path('index.html')
-          text=path.read_text(encoding='utf-8')
+          path = Path('index.html')
+          text = path.read_text(encoding='utf-8')
 
-          def once(old,new,label):
+          def once(old, new, label):
               global text
-              n=text.count(old)
-              if n!=1:
-                  raise SystemExit(f'{label}: expected 1 match, got {n}')
-              text=text.replace(old,new,1)
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected 1 match, got {count}')
+              text = text.replace(old, new, 1)
 
-          def section(src,start,end):
-              a=src.index(start); b=src.index(end,a)+len(end); return src[a:b]
+          def section(src, start, end):
+              a = src.index(start)
+              b = src.index(end, a) + len(end)
+              return src[a:b]
 
-          core_start='/* BEGIN ./core.mjs — preserve ecology/progression; renderer and score-view are display code. */'
-          core_end='/* END ./core.mjs */'
-          set_start='/* BEGIN ./set1-session.mjs — preserve ecology/progression; renderer and score-view are display code. */'
-          set_end='/* END ./set1-session.mjs */'
-          core_before=hashlib.sha256(section(text,core_start,core_end).encode()).hexdigest()
-          set_before=hashlib.sha256(section(text,set_start,set_end).encode()).hexdigest()
+          core_start = '/* BEGIN ./core.mjs — preserve ecology/progression; renderer and score-view are display code. */'
+          core_end = '/* END ./core.mjs */'
+          session_start = '/* BEGIN ./set1-session.mjs — preserve ecology/progression; renderer and score-view are display code. */'
+          session_end = '/* END ./set1-session.mjs */'
+          core_before = hashlib.sha256(section(text, core_start, core_end).encode()).hexdigest()
+          session_before = hashlib.sha256(section(text, session_start, session_end).encode()).hexdigest()
 
           once(
               "const setAbilities=(s.selectionHistory||[]).filter(e=>e.type==='set'&&Number(e.set)===Number(setNo)).map(e=>({set:e.set,id:e.id,name:e.name}));",
@@ -54,21 +56,25 @@ jobs:
               'SET ability snapshot'
           )
 
-          old_fn="""function ensureSetResultNext(){
-  let button=$('set-result-next');if(button)return button;
-  button=document.createElement('button');button.id='set-result-next';button.type='button';button.className='primary set-result-next';button.textContent='SET 2へ';button.setAttribute('aria-label','SET 2の能力選択へ進む');
-  button.onclick=()=>{hideSetResultNext();document.body.classList.remove('ui-set-result');$('result').classList.remove('set-result-mode');selectSecondSet();};
-  resultCard()?.append(button);return button;
-}"""
-          new_fn="""function ensureSetResultNext(){
-  let button=$('set-result-next');
-  if(!button){
-    button=document.createElement('button');button.id='set-result-next';button.type='button';button.className='primary set-result-next';button.textContent='SET 2へ';button.setAttribute('aria-label','SET 2の能力選択へ進む');
-    button.onclick=()=>{hideSetResultNext();document.body.classList.remove('ui-set-result');$('result').classList.remove('set-result-mode');selectSecondSet();};
-  }
-  const card=resultCard(),details=card?.querySelector('details');if(card)card.insertBefore(button,details||null);return button;
-}"""
-          once(old_fn,new_fn,'SET2 button order')
+          old_fn = "\n".join([
+              "function ensureSetResultNext(){",
+              "  let button=$('set-result-next');if(button)return button;",
+              "  button=document.createElement('button');button.id='set-result-next';button.type='button';button.className='primary set-result-next';button.textContent='SET 2へ';button.setAttribute('aria-label','SET 2の能力選択へ進む');",
+              "  button.onclick=()=>{hideSetResultNext();document.body.classList.remove('ui-set-result');$('result').classList.remove('set-result-mode');selectSecondSet();};",
+              "  resultCard()?.append(button);return button;",
+              "}"
+          ])
+          new_fn = "\n".join([
+              "function ensureSetResultNext(){",
+              "  let button=$('set-result-next');",
+              "  if(!button){",
+              "    button=document.createElement('button');button.id='set-result-next';button.type='button';button.className='primary set-result-next';button.textContent='SET 2へ';button.setAttribute('aria-label','SET 2の能力選択へ進む');",
+              "    button.onclick=()=>{hideSetResultNext();document.body.classList.remove('ui-set-result');$('result').classList.remove('set-result-mode');selectSecondSet();};",
+              "  }",
+              "  const card=resultCard(),details=card?.querySelector('details');if(card)card.insertBefore(button,details||null);return button;",
+              "}"
+          ])
+          once(old_fn, new_fn, 'SET2 button order')
 
           once(
               "#result.set-result-mode{align-items:flex-start!important;padding-top:18px!important}",
@@ -80,16 +86,17 @@ jobs:
               "@media(max-width:390px){#result.set-result-mode{padding-top:6px!important;padding-bottom:10px!important}#set-result-next{height:44px!important;min-height:44px!important;font-size:13.5px!important;line-height:42px!important}}",
               'SET result mobile position'
           )
-          css_anchor="#set-result-next{box-sizing:border-box!important;width:100%!important;height:44px!important;min-height:44px!important;margin-top:10px!important;padding:0 14px!important;border:1px solid #818b95!important;border-radius:10px!important;background:linear-gradient(180deg,#2a3036 0%,#20262c 100%)!important;color:#eef2f5!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.10)!important;font-size:14px!important;font-weight:800!important;line-height:42px!important;letter-spacing:.02em!important}\n"
-          css_add="#result.set-result-mode details{margin-top:12px!important;padding-top:8px!important;border-top:1px solid rgba(132,148,164,.28)!important}\n#result.set-result-mode details>summary{min-height:28px!important;padding:4px 2px!important;color:#9eabb7!important;font-size:9px!important;font-weight:650!important}\n"
-          once(css_anchor,css_anchor+css_add,'SET result detail separation')
 
-          core_after=hashlib.sha256(section(text,core_start,core_end).encode()).hexdigest()
-          set_after=hashlib.sha256(section(text,set_start,set_end).encode()).hexdigest()
-          if core_before!=core_after or set_before!=set_after:
+          css_anchor = "#set-result-next{box-sizing:border-box!important;width:100%!important;height:44px!important;min-height:44px!important;margin-top:10px!important;padding:0 14px!important;border:1px solid #818b95!important;border-radius:10px!important;background:linear-gradient(180deg,#2a3036 0%,#20262c 100%)!important;color:#eef2f5!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.10)!important;font-size:14px!important;font-weight:800!important;line-height:42px!important;letter-spacing:.02em!important}\n"
+          css_add = "#result.set-result-mode details{margin-top:12px!important;padding-top:8px!important;border-top:1px solid rgba(132,148,164,.28)!important}\n#result.set-result-mode details>summary{min-height:28px!important;padding:4px 2px!important;color:#9eabb7!important;font-size:9px!important;font-weight:650!important}\n"
+          once(css_anchor, css_anchor + css_add, 'SET result detail separation')
+
+          core_after = hashlib.sha256(section(text, core_start, core_end).encode()).hexdigest()
+          session_after = hashlib.sha256(section(text, session_start, session_end).encode()).hexdigest()
+          if core_before != core_after or session_before != session_after:
               raise SystemExit('simulation/session code changed unexpectedly')
 
-          path.write_text(text,encoding='utf-8')
+          path.write_text(text, encoding='utf-8')
           PY
 
       - name: Validate
@@ -99,13 +106,13 @@ jobs:
           python - <<'PY'
           from pathlib import Path
           import re
-          text=Path('index.html').read_text(encoding='utf-8')
+          text = Path('index.html').read_text(encoding='utf-8')
           assert "e.selected.id" in text and "e.selected.name" in text
           assert "card.insertBefore(button,details||null)" in text
           assert "#result.set-result-mode{align-items:flex-end!important" in text
-          m=re.search(r'<script id="v1r-runtime">(.*?)</script>',text,re.S)
+          m = re.search(r'<script id="v1r-runtime">(.*?)</script>', text, re.S)
           assert m
-          Path('/tmp/v1r-runtime.js').write_text(m.group(1),encoding='utf-8')
+          Path('/tmp/v1r-runtime.js').write_text(m.group(1), encoding='utf-8')
           PY
           node --check /tmp/v1r-runtime.js
 
@@ -116,5 +123,3 @@ jobs:
           git add index.html
           git commit -m "Refine SET1 result layout and details"
           git push origin HEAD:main
-
-# trigger 3
