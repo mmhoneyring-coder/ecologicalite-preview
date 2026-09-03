@@ -1,0 +1,85 @@
+name: Apply SET1 result polish
+
+on:
+  push:
+    branches:
+      - work/set1-result-polish-run-2026-09-03
+    paths:
+      - .github/workflows/apply-set1-result-polish.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Verify base
+        run: test "$(git rev-parse HEAD)" = "7565747f1ee309dd2f3c3d31118d8e6744a03cc7"
+
+      - name: Apply UI polish
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import hashlib
+
+          path=Path('index.html')
+          text=path.read_text(encoding='utf-8')
+
+          def once(old,new,label):
+              global text
+              n=text.count(old)
+              if n!=1:
+                  raise SystemExit(f'{label}: expected 1 match, got {n}')
+              text=text.replace(old,new,1)
+
+          def section(src,start,end):
+              a=src.index(start); b=src.index(end,a)+len(end); return src[a:b]
+
+          core_start='/* BEGIN ./core.mjs — preserve ecology/progression; renderer and score-view are display code. */'
+          core_end='/* END ./core.mjs */'
+          core_before=hashlib.sha256(section(text,core_start,core_end).encode()).hexdigest()
+
+          once("button.textContent='次へ';button.setAttribute('aria-label','SET 2の能力選択へ進む');","button.textContent='SET 2へ';button.setAttribute('aria-label','SET 2の能力選択へ進む');",'next label')
+
+          old_css="#set-result-next{margin-top:8px!important;border-color:#526b82!important;background:#193047!important;color:#e6eef5!important;font-weight:750!important}\n"
+          new_css="""#result.set-result-mode{align-items:flex-start!important;padding-top:18px!important}\n#set-result-next{box-sizing:border-box!important;width:100%!important;height:44px!important;min-height:44px!important;margin-top:10px!important;padding:0 14px!important;border:1px solid #818b95!important;border-radius:10px!important;background:linear-gradient(180deg,#2a3036 0%,#20262c 100%)!important;color:#eef2f5!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.10)!important;font-size:14px!important;font-weight:800!important;line-height:42px!important;letter-spacing:.02em!important}\n@media(max-width:390px){#result.set-result-mode{padding-top:14px!important}#set-result-next{height:44px!important;min-height:44px!important;font-size:13.5px!important;line-height:42px!important}}\n"""
+          once(old_css,new_css,'SET result button CSS')
+
+          core_after=hashlib.sha256(section(text,core_start,core_end).encode()).hexdigest()
+          if core_before!=core_after:
+              raise SystemExit('core.mjs changed unexpectedly')
+          for marker in ["button.textContent='SET 2へ'","#result.set-result-mode{align-items:flex-start","background:linear-gradient(180deg,#2a3036 0%,#20262c 100%)"]:
+              if marker not in text:
+                  raise SystemExit(f'missing {marker}')
+          path.write_text(text,encoding='utf-8')
+          PY
+
+      - name: Validate
+        run: |
+          git diff --check
+          test "$(git diff --name-only)" = "index.html"
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          text=Path('index.html').read_text(encoding='utf-8')
+          m=re.search(r'<script id="v1r-runtime">(.*?)</script>',text,re.S)
+          assert m
+          Path('/tmp/v1r-runtime.js').write_text(m.group(1),encoding='utf-8')
+          assert "button.textContent='SET 2へ'" in text
+          assert '#result.set-result-mode{align-items:flex-start' in text
+          PY
+          node --check /tmp/v1r-runtime.js
+
+      - name: Commit to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Polish SET1 intermediate result"
+          git push origin HEAD:main
