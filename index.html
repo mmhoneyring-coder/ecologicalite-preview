@@ -2337,7 +2337,7 @@ button{font:inherit;color:inherit;cursor:pointer}
   <details class="info-details"><summary>移動・HP</summary><div class="info-content"><div class="info-sub"><h3>基準値</h3><table class="info-table"><tbody><tr><th>草食の移動</th><td>3 Turnごと</td></tr><tr><th>肉食の移動</th><td>6 Turnごと</td></tr><tr><th>HP減少</th><td>3 Turnごとに -1</td></tr><tr><th>草食 最大HP / 初期HP</th><td>180 / 90</td></tr><tr><th>肉食 最大HP / 初期HP</th><td>300 / 150</td></tr><tr><th>草食 摂食回復</th><td>+34</td></tr><tr><th>肉食 捕食回復</th><td>+100</td></tr><tr><th>繁殖後の親HP</th><td>最大HPの50%</td></tr><tr><th>子の基準HP</th><td>最大HPの50%</td></tr></tbody></table></div></div></details>
   <details class="info-details"><summary>活動・死体</summary><div class="info-content"><div class="info-sub"><h3>活動値</h3><table class="info-table"><tbody><tr><th>草食が植物を食べる</th><td>活動 +6</td></tr><tr><th>肉食が草食を捕食</th><td>活動 +18</td></tr><tr><th>活動植物生成</th><td>12 ptで植物1個</td></tr></tbody></table></div><div class="info-sub"><h3>死体</h3><p>死体は40 Turn残り、8 Turnごとに周囲への植物生成を試みます。</p></div></div></details>
   <details class="info-details"><summary>SET能力</summary><div class="info-content"><div class="info-sub"><h3>固定効果</h3><table class="info-table"><tbody><tr><th>時間延長</th><td>STAGE 1〜6で +1〜+6秒。次SETでは+1秒から</td></tr><tr><th>植物察知</th><td>HP40%以下の草食が半径2の最寄り植物へ向かう</td></tr><tr><th>危険察知</th><td>HP65%以上の草食が半径2の肉食から70%で離れる</td></tr><tr><th>植物の周期</th><td>180Tで休眠、72Tで再生。自然枯死時25%で半径2へ種子散布</td></tr><tr><th>被食植物の再生</th><td>食べられた植物の10%が休眠し、72T後に同じ場所で再生</td></tr><tr><th>捕食の還元</th><td>捕食された草食の20%が死体を残す</td></tr><tr><th>双子の誕生</th><td>通常繁殖時10%で子がもう1体生まれる</td></tr><tr><th>肉食の獲物察知</th><td>HP70%以上の肉食が半径2の最寄り草食へ向かう</td></tr></tbody></table></div></div></details>
-  <details class="info-details"><summary>通常能力</summary><div class="info-content"><div class="info-sub"><h3>重複</h3><p>通常能力は同じ能力を最大3積みまで取得できます。</p></div><div class="info-sub"><h3>固定効果</h3><table class="info-table"><tbody><tr><th>摂食得点アップ</th><td>対象得点 +15% / 積み</td></tr><tr><th>繁殖得点アップ</th><td>対象得点 +15% / 積み</td></tr><tr><th>生存得点アップ</th><td>対象得点 +15% / 積み</td></tr><tr><th>草食系得点アップ</th><td>草食系得点 +10% / 積み</td></tr><tr><th>肉食系得点アップ</th><td>肉食系得点 +10% / 積み</td></tr><tr><th>草食摂食時HP回復</th><td>+2 / 積み</td></tr><tr><th>肉食捕食時HP回復</th><td>+10 / 積み</td></tr><tr><th>草食の子HP</th><td>+10 / 積み</td></tr><tr><th>肉食の子HP</th><td>+15 / 積み</td></tr><tr><th>活動植物生成</th><td>必要pt -1 / 積み</td></tr><tr><th>植物 一時投入</th><td>取得時に植物 +12</td></tr><tr><th>草食 一時投入</th><td>取得時に草食 +2</td></tr></tbody></table></div></div></details>
+  <details class="info-details"><summary>通常能力</summary><div class="info-content"><div class="info-sub"><h3>重複</h3><p>通常能力は同じ能力を最大3積みまで取得できます。</p></div><div class="info-sub"><h3>固定効果</h3><table class="info-table"><tbody><tr><th>摂食得点アップ</th><td>対象得点 +15% / 積み</td></tr><tr><th>繁殖得点アップ</th><td>対象得点 +15% / 積み</td></tr><tr><th>生存得点アップ</th><td>対象得点 +15% / 積み</td></tr><tr><th>草食系得点アップ</th><td>草食系得点 +10% / 積み</td></tr><tr><th>肉食系得点アップ</th><td>肉食系得点 +10% / 積み</td></tr><tr><th>草食摂食時HP回復</th><td>+2 / 積み</td></tr><tr><th>肉食捕食時HP回復</th><td>+10 / 積み</td></tr><tr><th>草食の子HP</th><td>+10 / 積み</td></tr><tr><th>肉食の子HP</th><td>+15 / 積み</td></tr><tr><th>活動植物生成</th><td>必要pt -1 / 積み</td></tr><tr><th>植物 一時投入</th><td>取得時に植物 +12</td></tr><tr><th>草食 一時投入</th><td>取得時に草食 +3</td></tr></tbody></table></div></div></details>
   <details class="info-details"><summary>得点計算</summary><div class="info-content"><div class="info-sub"><h3>基礎点</h3><table class="info-table"><tbody><tr><th>植物摂食</th><td>1</td></tr><tr><th>肉食捕食</th><td>30</td></tr><tr><th>草食出生</th><td>20</td></tr><tr><th>肉食出生</th><td>120</td></tr><tr><th>STAGE終了時 草食生存</th><td>4 / 体</td></tr><tr><th>STAGE終了時 肉食生存</th><td>15 / 体</td></tr></tbody></table></div><div class="info-sub"><h3>計算式</h3><p>項目得点 ＝ 対象イベント数（生存はSTAGE終了時個体数）× 基礎点 × 能力倍率。得点能力の重複効果は加算して倍率に反映します。</p></div></div></details>
 </section>
 <section class="info-tier">
@@ -2462,7 +2462,7 @@ const DEFAULT_VALUES = Object.freeze({
     N_CARN_CHILD: 15,
     N_ACTIVITY_PLANTS: 1,
     N_BURST_PLANTS: 12,
-    N_BURST_HERBS: 2
+    N_BURST_HERBS: 3
   }),
   set: Object.freeze({
     S_STAGE_TIME: Object.freeze({secondsPerStage: 1}),
@@ -2489,7 +2489,7 @@ const NORMAL_ABILITIES = Object.freeze({
   N_CARN_CHILD: {name: "肉食の子HP+15", kind: "childBonus", field: "carn"},
   N_ACTIVITY_PLANTS: {name: "活動植物生成 必要pt-1", kind: "activityThreshold", field: "activityPlantThreshold"},
   N_BURST_PLANTS: {name: "植物+12（一時投入）", kind: "oneShot", field: "plants"},
-  N_BURST_HERBS: {name: "草食+2（一時投入）", kind: "oneShot", field: "herbs"}
+  N_BURST_HERBS: {name: "草食+3（一時投入）", kind: "oneShot", field: "herbs"}
 });
 
 const SET_REWARDS = Object.freeze({
@@ -3894,7 +3894,7 @@ async function loadConfig(){return {
       "N_CARN_CHILD": 15,
       "N_ACTIVITY_PLANTS": 1,
       "N_BURST_PLANTS": 12,
-      "N_BURST_HERBS": 2
+      "N_BURST_HERBS": 3
     },
     "set": {
       "S_STAGE_TIME": {
