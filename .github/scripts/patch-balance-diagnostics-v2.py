@@ -90,9 +90,10 @@ rd = rd.replace("`preferred_pick_rate` は、そのビルドの主要通常能�
 readme.write_text(rd)
 
 wf = workflow.read_text()
-if ' -eq 1200' not in wf or ' -eq 14400' not in wf:
-    raise SystemExit('missing workflow row-count targets')
-wf = wf.replace(' -eq 1200', ' -eq 1680').replace(' -eq 14400', ' -eq 20160')
-workflow.write_text(wf)
+if ' -eq 1200' in wf and ' -eq 14400' in wf:
+    wf = wf.replace(' -eq 1200', ' -eq 1680').replace(' -eq 14400', ' -eq 20160')
+    workflow.write_text(wf)
+elif ' -eq 1680' not in wf or ' -eq 20160' not in wf:
+    raise SystemExit('unexpected workflow row-count targets')
 
 print('patched balance diagnostic runner v2')
