@@ -1,0 +1,131 @@
+name: Experiment grass +3
+
+on:
+  push:
+    branches:
+      - experiment/burst-herbs-3-2026-09-04
+    paths:
+      - .github/workflows/experiment-burst-herbs-3.yml
+      - tools/balance-diagnostics/**
+      - index.html
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run current +2 baseline
+        run: node tools/balance-diagnostics/runner.mjs --seeds=30 --out=artifacts/baseline-plus2
+
+      - name: Patch grass one-shot to +3 only for experiment
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          quoted='"N_BURST_HERBS": 2'
+          bare='N_BURST_HERBS: 2'
+          count=s.count(quoted)+s.count(bare)
+          if count < 1:
+              raise SystemExit('N_BURST_HERBS +2 target not found')
+          s=s.replace(quoted,'"N_BURST_HERBS": 3').replace(bare,'N_BURST_HERBS: 3')
+          p.write_text(s)
+          print(f'patched occurrences={count}')
+          PY
+          grep -n "N_BURST_HERBS" index.html | head
+
+      - name: Run experimental +3
+        run: node tools/balance-diagnostics/runner.mjs --seeds=30 --out=artifacts/grass-plus3
+
+      - name: Compare paired results
+        run: |
+          python - <<'PY'
+          import csv, json, statistics
+          from pathlib import Path
+
+          root=Path('artifacts')
+          def read(name):
+              with open(root/name/'runs.csv', newline='') as f:
+                  return list(csv.DictReader(f))
+          base=read('baseline-plus2')
+          exp=read('grass-plus3')
+          key=lambda r:(r['seed'],r['build_id'],r['policy_id'])
+          b={key(r):r for r in base}; e={key(r):r for r in exp}
+          if b.keys()!=e.keys(): raise SystemExit('paired run keys differ')
+          num=lambda r,k:float(r.get(k) or 0)
+          builds=[]
+          seen=set()
+          for r in base:
+              if r['build_id'] not in seen:
+                  seen.add(r['build_id']); builds.append((r['build_id'],r['build_label']))
+
+          focus=['burst-herbs-first','one-shot-first','tailored','mixed']
+          report=['# 草食一時投入 +2 → +3 比較','', '- 同じ30seed・同じビルド方針でペア比較', '- ゲーム本体の正式値は変更していない', '- +3はこのWorkflow内でのみ `index.html` を一時置換して計測', '', '## +3の直接影響', '', '| 方針 | 平均得点差 | +3勝率 | 草食出生差 | 捕食差 | 肉食出生差 | 最終 草食差 | 最終 肉食差 |', '|---|---:|---:|---:|---:|---:|---:|---:|']
+          summary={}
+          for pol in focus:
+              pairs=[(b[k],e[k]) for k in b if k[2]==pol]
+              if not pairs: continue
+              diffs=[num(y,'run_score')-num(x,'run_score') for x,y in pairs]
+              wins=sum(d>0 for d in diffs)/len(diffs)
+              def dmean(field): return statistics.mean(num(y,field)-num(x,field) for x,y in pairs)
+              vals={'score_delta':statistics.mean(diffs),'win_rate':wins,'herb_births_delta':dmean('herb_births'),'herb_eaten_delta':dmean('herb_eaten'),'carn_births_delta':dmean('carn_births'),'final_herbs_delta':dmean('final_herbs'),'final_carns_delta':dmean('final_carns')}
+              summary[pol]=vals
+              report.append(f"| {pol} | {vals['score_delta']:+.1f} | {wins*100:.1f}% | {vals['herb_births_delta']:+.2f} | {vals['herb_eaten_delta']:+.2f} | {vals['carn_births_delta']:+.2f} | {vals['final_herbs_delta']:+.2f} | {vals['final_carns_delta']:+.2f} |")
+
+          report += ['', '## 植物+12優先 vs 草食優先', '', '草食列は、+2時と+3時で「植物+12優先」に対してどこまで差が縮むかを見る。', '', '| 初期SETビルド | 植物+12 平均 | 草食+2 平均 | 差(+2-植物) | 草食+3 平均 | 差(+3-植物) | 草食+3勝率 vs 植物 |', '|---|---:|---:|---:|---:|---:|---:|']
+          gap=[]
+          for bid,label in builds:
+              bp=[r for r in base if r['build_id']==bid and r['policy_id']=='burst-plants-first']
+              bh2=[r for r in base if r['build_id']==bid and r['policy_id']=='burst-herbs-first']
+              bh3=[r for r in exp if r['build_id']==bid and r['policy_id']=='burst-herbs-first']
+              byseedp={r['seed']:r for r in bp}; byseed3={r['seed']:r for r in bh3}
+              mp=statistics.mean(num(r,'run_score') for r in bp); m2=statistics.mean(num(r,'run_score') for r in bh2); m3=statistics.mean(num(r,'run_score') for r in bh3)
+              wr=sum(num(byseed3[s],'run_score')>num(byseedp[s],'run_score') for s in byseedp)/len(byseedp)
+              gap.append({'build':label,'plant':mp,'herb2':m2,'herb3':m3,'gap2':m2-mp,'gap3':m3-mp,'win3':wr})
+              report.append(f'| {label} | {mp:.0f} | {m2:.0f} | {m2-mp:+.0f} | {m3:.0f} | {m3-mp:+.0f} | {wr*100:.1f}% |')
+
+          report += ['', '## 安全確認', '']
+          # Policies that never take one-shots should be bit-identical; this catches accidental rule/RNG changes.
+          unchanged=[]
+          for pol in ['no-one-shot','score-first']:
+              ps=[(b[k],e[k]) for k in b if k[2]==pol]
+              same=sum(num(x,'run_score')==num(y,'run_score') for x,y in ps)
+              unchanged.append((pol,same,len(ps)))
+              report.append(f'- `{pol}` 得点完全一致: {same}/{len(ps)}')
+          report.append('- 上記が完全一致なら、+3変更が一時投入を取得しないランへ波及していないことを確認できる。')
+
+          Path('artifacts/grass-plus3-comparison.md').write_text('\n'.join(report))
+          Path('artifacts/grass-plus3-comparison.json').write_text(json.dumps({'direct':summary,'plant_vs_herb':gap,'unchanged':unchanged},ensure_ascii=False,indent=2))
+          print('\n'.join(report))
+          PY
+
+      - name: Verify result counts
+        run: |
+          test "$(awk 'END {print NR-1}' artifacts/baseline-plus2/runs.csv)" -eq 1680
+          test "$(awk 'END {print NR-1}' artifacts/grass-plus3/runs.csv)" -eq 1680
+          test -s artifacts/grass-plus3-comparison.md
+          test -s artifacts/grass-plus3-comparison.json
+
+      - name: Upload comparison
+        uses: actions/upload-artifact@v4
+        with:
+          name: grass-plus3-balance-comparison
+          path: |
+            artifacts/grass-plus3-comparison.md
+            artifacts/grass-plus3-comparison.json
+            artifacts/baseline-plus2/summary.json
+            artifacts/grass-plus3/summary.json
+            artifacts/baseline-plus2/runs.csv
+            artifacts/grass-plus3/runs.csv
+          if-no-files-found: error
