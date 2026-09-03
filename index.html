@@ -4193,8 +4193,8 @@ function paint(){
 function finish(){
   clock=null;paused=false;updatePlaybackControls();const complete=session.setDone;
   if(!complete){$('active').hidden=true;selectNormal();return;}
-  if(!session.runDone){$('active').hidden=true;selectSecondSet();return;}
-  $('status').textContent='GAME SET';document.body.classList.add('ui-game-set');$('active').hidden=true;$('result').hidden=false;$('result-heading').setAttribute('aria-label','GAME SET');
+  if(!session.runDone){$('active').hidden=true;showSetResult();return;}
+  hideSetResultNext();document.body.classList.remove('ui-set-result');$('result').classList.remove('set-result-mode');$('status').textContent='GAME SET';document.body.classList.add('ui-game-set');$('active').hidden=true;$('result').hidden=false;$('result-heading').setAttribute('aria-label','GAME SET');
   $('result-eyebrow').textContent='RUN COMPLETE';
   $('result-heading').textContent='12 Stage 完了';
   label($('result-score-label'),'得点','TOTAL');
@@ -4203,10 +4203,10 @@ function finish(){
   renderResultDetails();$('replay').hidden=true;
 }
 function frame(now){if(paused||!clock)return;if(clock.advance(now))paint();if(session.done){paint();paused=false;finish();return;}raf=requestAnimationFrame(frame);}
-function runStage(){tapCycle=null;setBoardInspection(false);paused=false;document.body.classList.remove('ui-game-set');clock=new FixedClock(session,performance.now(),speed);$('normal-selection').hidden=true;$('second-set-selection').hidden=true;$('result').hidden=true;$('active').hidden=false;$('status').textContent=`Set${session.set} Stage${session.stage}観測中`;$('ability-name').textContent=session.state.setRewards.map(id=>SET_TEXT[id][0]).join(' ＋ ');$('ability-description').textContent=session.state.setRewards.map(id=>SET_TEXT[id][1]).join(' / ');paint();raf=requestAnimationFrame(frame);}
+function runStage(){tapCycle=null;setBoardInspection(false);hideSetResultNext();document.body.classList.remove('ui-set-result');$('result').classList.remove('set-result-mode');paused=false;document.body.classList.remove('ui-game-set');clock=new FixedClock(session,performance.now(),speed);$('normal-selection').hidden=true;$('second-set-selection').hidden=true;$('result').hidden=true;$('active').hidden=false;$('status').textContent=`Set${session.set} Stage${session.stage}観測中`;$('ability-name').textContent=session.state.setRewards.map(id=>SET_TEXT[id][0]).join(' ＋ ');$('ability-description').textContent=session.state.setRewards.map(id=>SET_TEXT[id][1]).join(' / ');paint();raf=requestAnimationFrame(frame);}
 function start(ability){cancelAnimationFrame(raf);observation.reset();pointer=null;selected=ability;session=createRunSession(api,base,seed,ability);$('selection').hidden=true;$('back').hidden=false;runStage();}
 function selectSecondSet(){
-  $('result').hidden=true;$('normal-selection').hidden=true;$('second-set-selection').hidden=false;$('status').textContent='Set2能力選択待ち';heading($('second-set-selection'),'SET ABILITY',1);
+  hideSetResultNext();document.body.classList.remove('ui-set-result');$('result').classList.remove('set-result-mode');$('result').hidden=true;$('normal-selection').hidden=true;$('second-set-selection').hidden=false;$('status').textContent='Set2能力選択待ち';heading($('second-set-selection'),'SET ABILITY',1);
   $('set-summary').textContent=`Set1完了：${formatScore(session.setScore())}点。通常能力5個を引き継ぎます。`;
   $('second-set-choices').replaceChildren(...session.setOffers().map(id=>{const b=document.createElement('button'),name=document.createElement('strong'),desc=document.createElement('span');b.type='button';b.className='choice';b.dataset.ability=id;name.textContent=SET_TEXT[id][0];desc.textContent=SET_TEXT[id][1];b.append(name,desc);b.onclick=()=>{session.beginSet(id);observation.reset();pointer=null;runStage();};return b;}));
 }
@@ -4218,7 +4218,7 @@ function selectNormal(){
     b.append(name,stack,desc);b.onclick=()=>{session.beginNext(id);pointer=null;runStage();};return b;}));
 }
 function choose(){
-  setBoardInspection(false);tapCycle=null;cancelAnimationFrame(raf);observation.reset();pointer=null;clock=null;document.body.classList.remove('ui-game-set');seed=$('seed').value.trim()||DEFAULT_SEED;$('seed').value=seed;selected=null;session=createRunSession(api,base,seed);
+  setBoardInspection(false);tapCycle=null;hideSetResultNext();document.body.classList.remove('ui-set-result');$('result').classList.remove('set-result-mode');cancelAnimationFrame(raf);observation.reset();pointer=null;clock=null;document.body.classList.remove('ui-game-set');seed=$('seed').value.trim()||DEFAULT_SEED;$('seed').value=seed;selected=null;session=createRunSession(api,base,seed);
   $('selection').hidden=false;$('normal-selection').hidden=true;$('second-set-selection').hidden=true;$('active').hidden=true;$('result').hidden=true;$('back').hidden=true;$('status').textContent='能力選択待ち';label($('score-label'),'得点');
   $('choices').replaceChildren(...offerAbilities(createEngine,base.values,seed).map(id=>{const b=document.createElement('button');b.type='button';b.className='choice';b.dataset.ability=id;b.setAttribute('aria-label',SET_TEXT[id][0]+'を選んで開始');const name=document.createElement('strong'),desc=document.createElement('span'),go=document.createElement('em');name.textContent=SET_TEXT[id][0];desc.textContent=SET_TEXT[id][1];go.textContent='この能力で始める →';b.append(name,desc,go);b.onclick=()=>start(id);return b;}));paint();
 }
@@ -4432,6 +4432,59 @@ function showCurrentRunDetail(){
 }
 renderResultDetails=function(){showCurrentRunDetail();};
 
+function buildSetSnapshot(s,setNo=1){
+  const results=(s.results||[]).filter(r=>Number(r.set)===Number(setNo));
+  const sumScore=key=>results.reduce((n,r)=>n+Number(r.score?.components?.[key]||0),0);
+  const sumEvent=key=>results.reduce((n,r)=>n+Number(r.events?.[key]||0),0);
+  const score=results.reduce((n,r)=>n+Number(r.score?.total||0),0);
+  const setAbilities=(s.selectionHistory||[]).filter(e=>e.type==='set'&&Number(e.set)===Number(setNo)).map(e=>({set:e.set,id:e.id,name:e.name}));
+  const normalAbilities=Object.entries(s.state?.normalStacks||{}).filter(([,count])=>Number(count)>0).map(([id,count])=>({id,name:s.engine.NORMAL_ABILITIES[id]?.name||id,count:Number(count)}));
+  const stages=results.map(r=>({set:r.set,stage:r.stage,plants:Number(r.counts?.plants||0),herbs:Number(r.counts?.herbs||0),carns:Number(r.counts?.carns||0),score:Number(r.score?.total||0)}));
+  return {score,scoreComponents:Object.fromEntries(snapshotScoreKeys.map(([key])=>[key,sumScore(key)])),ecology:{plantEaten:sumEvent('plantEaten'),herbEaten:sumEvent('herbEaten'),herbBirths:sumEvent('herbBirths'),carnBirths:sumEvent('carnBirths'),herbNaturalDeaths:sumEvent('herbNaturalDeaths'),carnNaturalDeaths:sumEvent('carnNaturalDeaths')},setAbilities,normalAbilities,stages};
+}
+function renderSetSnapshotDetail(record,setNo=1){
+  const root=$('result-details');if(!root||!record)return;
+  root.className='result-detail-groups run-detail-layout set-result-detail';root.replaceChildren();
+  const overview=detailSection('得点・生態系','run-detail-overview');
+  const scoreGrid=document.createElement('div');scoreGrid.className='run-score-grid';
+  for(const [key,labelText] of snapshotScoreKeys)makeKV(scoreGrid,labelText,formatScore(record.scoreComponents?.[key]||0));
+  overview.append(scoreGrid);
+  const ecoGrid=document.createElement('div');ecoGrid.className='run-eco-grid';
+  makeKV(ecoGrid,'植物摂食',int(record.ecology?.plantEaten||0));makeKV(ecoGrid,'捕食',int(record.ecology?.herbEaten||0));
+  makeKV(ecoGrid,'草食出生',int(record.ecology?.herbBirths||0));makeKV(ecoGrid,'肉食出生',int(record.ecology?.carnBirths||0));
+  makeKV(ecoGrid,'草食死亡',`自然 ${int(record.ecology?.herbNaturalDeaths||0)} / 捕食 ${int(record.ecology?.herbEaten||0)}`);makeKV(ecoGrid,'肉食死亡',int(record.ecology?.carnNaturalDeaths||0));overview.append(ecoGrid);
+
+  const abilities=detailSection('取得能力','run-detail-abilities');
+  const setGrid=document.createElement('div');setGrid.className='run-set-grid set-result-single';
+  const a=record.setAbilities?.find(x=>Number(x.set)===Number(setNo)),card=document.createElement('div');card.className='run-ability-card set';card.innerHTML=`<small>SET ${setNo}</small><strong>${a?.name||'—'}</strong>`;setGrid.append(card);abilities.append(setGrid);
+  const normalGrid=document.createElement('div');normalGrid.className='run-normal-grid';
+  for(const item of record.normalAbilities||[]){const el=document.createElement('div');el.className='run-ability-card normal';el.innerHTML=`<span>${item.name}</span><strong>×${item.count}</strong>`;normalGrid.append(el);}
+  if(!normalGrid.childElementCount){const empty=document.createElement('span');empty.className='run-empty';empty.textContent='通常能力なし';normalGrid.append(empty);}abilities.append(normalGrid);
+
+  const stages=detailSection('STAGE結果','run-detail-stages');
+  const stageGrid=document.createElement('div');stageGrid.className='run-stage-grid set-result-single';
+  const wrap=document.createElement('div');wrap.className='run-stage-set';const head=document.createElement('div');head.className='run-stage-set-head';head.innerHTML=`<span>SET ${setNo}</span>`;wrap.append(head);
+  const table=document.createElement('table');table.className='run-stage-table';table.innerHTML='<thead><tr><th>S</th><th>植</th><th>草</th><th>肉</th><th>得点</th></tr></thead><tbody></tbody>';const body=table.querySelector('tbody');
+  for(const r of record.stages||[]){const tr=document.createElement('tr');tr.innerHTML=`<th>${r.stage}</th><td>${int(r.plants)}</td><td>${int(r.herbs)}</td><td>${int(r.carns)}</td><td>${formatScore(r.score)}</td>`;body.append(tr);}wrap.append(table);stageGrid.append(wrap);stages.append(stageGrid);
+  root.append(overview,abilities,stages);
+}
+function ensureSetResultNext(){
+  let button=$('set-result-next');if(button)return button;
+  button=document.createElement('button');button.id='set-result-next';button.type='button';button.className='primary set-result-next';button.textContent='次へ';button.setAttribute('aria-label','SET 2の能力選択へ進む');
+  button.onclick=()=>{hideSetResultNext();document.body.classList.remove('ui-set-result');$('result').classList.remove('set-result-mode');selectSecondSet();};
+  resultCard()?.append(button);return button;
+}
+function hideSetResultNext(){const button=$('set-result-next');if(button)button.hidden=true;}
+function showSetResult(){
+  hideBestScores();clearDetailBack();document.body.classList.remove('ui-game-set');document.body.classList.add('ui-set-result');
+  const setNo=session.set,record=buildSetSnapshot(session,setNo),result=$('result'),heading=$('result-heading');
+  result.classList.add('set-result-mode');result.hidden=false;$('status').textContent=`SET ${setNo} COMPLETE`;$('result-eyebrow').textContent='SET COMPLETE';
+  heading.classList.remove('best-detail-heading');heading.dataset.displayHeading=`SET ${setNo} RESULT`;heading.setAttribute('aria-label',`SET ${setNo} RESULT`);
+  label($('result-score-label'),'SET SCORE');$('final-score').textContent=formatScore(record.score);renderSetSnapshotDetail(record,setNo);
+  const details=resultCard()?.querySelector('details');if(details){details.open=false;const summary=details.querySelector('summary');if(summary)summary.textContent='詳細';}
+  const button=ensureSetResultNext();button.hidden=false;
+}
+
 function ensureBestOverlay(){
   if(bestScoreOverlay)return bestScoreOverlay;
   const overlay=document.createElement('div');overlay.id='best-score-overlay';overlay.hidden=true;
@@ -4560,6 +4613,16 @@ featureStyle.textContent=`
 .best-score-row .best-rank{color:#8295a9;font-size:8px;font-weight:800}.best-score-row strong{text-align:right;color:#edf4fb;font-size:13px;font-variant-numeric:tabular-nums}.best-score-row small{color:#99d9bf;font-size:7px}.best-score-row.new-record{border-color:#91cdb7;box-shadow:inset 0 0 0 1px rgba(153,217,191,.18)}
 .best-empty{padding:18px 6px;color:#8fa2b5;font-size:9px;text-align:center}
 #result-heading.best-detail-heading::after{content:attr(data-display-heading)!important}
+#result.set-result-mode #result-heading::after{content:attr(data-display-heading)!important;color:#dbe3eb}
+#result.set-result-mode .result-card{border-color:rgba(143,158,173,.82)!important;box-shadow:0 16px 40px rgba(0,0,0,.3),inset 0 1px 0 rgba(223,231,238,.04)!important}
+#result.set-result-mode .result-score{border-bottom-color:rgba(132,148,164,.42)!important}#result.set-result-mode .result-score strong{color:#d7e0e8!important}
+#result.set-result-mode .final-set-scores{display:none!important}
+#result.set-result-mode .run-detail-section{border-color:rgba(128,145,162,.3);background:rgba(13,21,29,.42)}#result.set-result-mode .run-detail-section>h3{color:#d8e1e9}
+#result.set-result-mode .run-ability-card.set{border-color:#748698;background:rgba(55,68,82,.5)}#result.set-result-mode .run-ability-card.set small{color:#99a9b8}#result.set-result-mode .run-ability-card.set strong{color:#dce5ed}
+#result.set-result-mode .run-stage-set-head,#result.set-result-mode .run-stage-table tbody th{color:#c8d3dd}
+#result.set-result-mode .run-set-grid.set-result-single,#result.set-result-mode .run-stage-grid.set-result-single{grid-template-columns:1fr!important}
+#result.set-result-mode details>summary{color:#cbd6df}
+#set-result-next{margin-top:8px!important;border-color:#526b82!important;background:#193047!important;color:#e6eef5!important;font-weight:750!important}
 .result-panel.result-overlay-panel .result-card{width:min(96%,680px)!important}
 #result-details.run-detail-layout{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:7px!important;margin:6px 0 2px!important}
 .run-detail-section{min-width:0;padding:7px;border:1px solid rgba(93,117,141,.26);border-radius:8px;background:rgba(9,16,24,.36)}.run-detail-section>h3{margin:0 0 5px;color:#edf4fb;font-size:9.5px}.run-detail-stages{grid-column:1/-1}.run-detail-meta{grid-column:1/-1}
