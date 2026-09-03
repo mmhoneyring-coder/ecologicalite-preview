@@ -4455,11 +4455,11 @@ function renderSetSnapshotDetail(record,setNo=1){
   makeKV(ecoGrid,'草食死亡',`自然 ${int(record.ecology?.herbNaturalDeaths||0)} / 捕食 ${int(record.ecology?.herbEaten||0)}`);makeKV(ecoGrid,'肉食死亡',int(record.ecology?.carnNaturalDeaths||0));overview.append(ecoGrid);
 
   const abilities=detailSection('取得能力','run-detail-abilities');
-  const setGrid=document.createElement('div');setGrid.className='run-set-grid set-result-single';
-  const a=record.setAbilities?.find(x=>Number(x.set)===Number(setNo)),card=document.createElement('div');card.className='run-ability-card set';card.innerHTML=`<small>SET ${setNo}</small><strong>${a?.name||'—'}</strong>`;setGrid.append(card);abilities.append(setGrid);
-  const normalGrid=document.createElement('div');normalGrid.className='run-normal-grid';
-  for(const item of record.normalAbilities||[]){const el=document.createElement('div');el.className='run-ability-card normal';el.innerHTML=`<span>${item.name}</span><strong>×${item.count}</strong>`;normalGrid.append(el);}
-  if(!normalGrid.childElementCount){const empty=document.createElement('span');empty.className='run-empty';empty.textContent='通常能力なし';normalGrid.append(empty);}abilities.append(normalGrid);
+  const abilityGrid=document.createElement('div');abilityGrid.className='run-normal-grid set-result-ability-grid';
+  const a=record.setAbilities?.find(x=>Number(x.set)===Number(setNo)),card=document.createElement('div');card.className='run-ability-card set';card.innerHTML=`<small>SET ${setNo}</small><strong>${a?.name||'—'}</strong>`;abilityGrid.append(card);
+  let normalAbilityCount=0;
+  for(const item of record.normalAbilities||[]){const el=document.createElement('div');el.className='run-ability-card normal';el.innerHTML=`<span>${item.name}</span><strong>×${item.count}</strong>`;abilityGrid.append(el);normalAbilityCount++;}
+  if(!normalAbilityCount){const empty=document.createElement('span');empty.className='run-empty';empty.textContent='通常能力なし';abilityGrid.append(empty);}abilities.append(abilityGrid);
 
   const stages=detailSection('STAGE結果','run-detail-stages');
   const stageGrid=document.createElement('div');stageGrid.className='run-stage-grid set-result-single';
@@ -4635,6 +4635,7 @@ featureStyle.textContent=`
 .run-score-grid,.run-eco-grid,.run-meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px 8px}.run-meta-seed{grid-column:1/-1}.run-eco-grid{margin-top:5px;padding-top:5px;border-top:1px solid rgba(93,117,141,.2)}
 .run-kv{min-width:0;display:flex;justify-content:space-between;gap:5px;padding:2px 0;align-items:baseline}.run-kv span{min-width:0;color:#8fa2b5;font-size:7.5px}.run-kv strong{color:#e3edf6;font-size:8px;text-align:right;font-weight:650;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
 .run-set-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.run-normal-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px;margin-top:4px}
+.set-result-ability-grid{margin-top:0}.set-result-ability-grid .run-ability-card.set{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px;align-items:center;padding:4px 5px}.set-result-ability-grid .run-ability-card.set small{white-space:nowrap}.set-result-ability-grid .run-ability-card.set strong{margin-top:0}
 .run-ability-card{min-width:0;border-radius:6px}.run-ability-card.set{padding:5px;border:1px solid #8f7940;background:rgba(91,77,32,.46)}.run-ability-card.set small{display:block;color:#b5a777;font-size:6.5px}.run-ability-card.set strong{display:block;margin-top:2px;color:#ffe89b;font-size:7.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .run-ability-card.normal{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px;padding:4px 5px;border:1px solid rgba(64,86,111,.76);background:rgba(21,35,53,.65)}.run-ability-card.normal span{min-width:0;color:#cbd7e4;font-size:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.run-ability-card.normal strong{color:#99d9bf;font-size:7px}.run-empty{color:#8295a9;font-size:7px}
 .run-stage-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.run-stage-set{min-width:0}.run-stage-set-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px;color:#e8d089;font-size:7.5px}.run-stage-table{width:100%;border-collapse:collapse;table-layout:fixed;font-variant-numeric:tabular-nums}.run-stage-table th,.run-stage-table td{padding:2px 2px;border-bottom:1px solid rgba(93,117,141,.16);font-size:7px;text-align:right;white-space:nowrap}.run-stage-table th:first-child,.run-stage-table td:first-child{text-align:left}.run-stage-table thead th{color:#7f92a6;font-size:6.5px;font-weight:650}.run-stage-table tbody th{color:#e8d089;font-weight:650}
