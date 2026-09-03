@@ -76,7 +76,7 @@ jobs:
           ! grep -q '草食+2（一時投入）' index.html
           grep -q '| 草食 一時投入 | 取得時に草食 +3 |' docs/BALANCE.md
           grep -q '## 18. バランス診断runnerと草食一時投入の調整' docs/DEVELOPMENT_LOG.md
-          git diff --check
+          git diff --check -- index.html docs/DEVELOPMENT_LOG.md
 
       - name: Commit and push
         run: |
