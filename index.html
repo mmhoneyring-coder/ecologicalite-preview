@@ -4210,7 +4210,7 @@ function selectSecondSet(){
   $('set-summary').textContent=`Set1完了：${formatScore(session.setScore())}点。通常能力5個を引き継ぎます。`;
   $('second-set-choices').replaceChildren(...session.setOffers().map(id=>{const b=document.createElement('button'),name=document.createElement('strong'),desc=document.createElement('span');b.type='button';b.className='choice';b.dataset.ability=id;name.textContent=SET_TEXT[id][0];desc.textContent=SET_TEXT[id][1];b.append(name,desc);b.onclick=()=>confirmAbilityChoice(b,()=>{session.beginSet(id);observation.reset();pointer=null;runStage();});return b;}));
 }
-const CHOICE_CONFIRM_MS=700;
+const CHOICE_CONFIRM_MS=500;
 let choiceConfirmTimer=0;
 function cancelChoiceConfirm(){
   if(choiceConfirmTimer){clearTimeout(choiceConfirmTimer);choiceConfirmTimer=0;}
@@ -4713,6 +4713,7 @@ window.addEventListener('resize',featureResize);
 const featureStyle=document.createElement('style');
 featureStyle.id='best-score-repro-feature-styles';
 featureStyle.textContent=`
+.choice,.choice *{user-select:none;-webkit-user-select:none}.choice{-webkit-touch-callout:none}
 .choice.choice-confirm-selected:disabled{opacity:1!important;cursor:default;filter:brightness(1.22);border-color:var(--accent)!important;background:#244535!important;box-shadow:0 0 0 2px rgba(153,217,191,.18),0 0 18px rgba(153,217,191,.16);transform:translateY(-1px)}
 .choice.choice-confirm-dimmed:disabled{opacity:.34!important;cursor:default;filter:brightness(.62);transform:none}
 #best-score-overlay[hidden]{display:none!important}
