@@ -4253,7 +4253,9 @@ async function copyResults(){
 /* BEGIN EcologicaLite BEST SCORE + reproduction visual feature */
 const BEST_SCORE_VERSION='v1r-score-1';
 const BEST_STORAGE_KEY=`ecologicalite.bestRuns.${BEST_SCORE_VERSION}`;
-const BEST_LIMIT=5;
+const MANUAL_STORAGE_KEY=`ecologicalite.savedRuns.${BEST_SCORE_VERSION}`;
+const BEST_LIMIT=3;
+const MANUAL_LIMIT=10;
 const REPRO_FX_MS=400;
 let bestScoreOverlay=null;
 let currentNewRecord=null;
@@ -4273,6 +4275,16 @@ const safeBestWrite=list=>{
 };
 const safeBestClear=()=>{
   try{localStorage.removeItem(BEST_STORAGE_KEY);return true;}
+  catch(_error){return false;}
+};
+const safeManualRead=()=>{
+  try{
+    const parsed=JSON.parse(localStorage.getItem(MANUAL_STORAGE_KEY)||'[]');
+    return Array.isArray(parsed)?parsed.filter(x=>x&&Number.isFinite(Number(x.score))).slice(0,MANUAL_LIMIT):[];
+  }catch(_error){return [];}
+};
+const safeManualWrite=list=>{
+  try{localStorage.setItem(MANUAL_STORAGE_KEY,JSON.stringify(list.slice(0,MANUAL_LIMIT)));return true;}
   catch(_error){return false;}
 };
 const compactDate=iso=>{
@@ -4340,10 +4352,14 @@ function returnToBestScores(){
   const result=$('result');if(result)result.hidden=true;
   renderBestScores(currentNewRecord);
 }
-function addDetailBack(){
+function returnToManualRuns(){
+  const result=$('result');if(result)result.hidden=true;
+  renderManualRuns();
+}
+function addDetailBack(text='BEST SCOREへ戻る',handler=returnToBestScores){
   clearDetailBack();
-  const b=document.createElement('button');b.id='best-detail-back';b.type='button';b.textContent='BEST SCOREへ戻る';
-  b.onclick=returnToBestScores;resultCard()?.append(b);
+  const b=document.createElement('button');b.id='best-detail-back';b.type='button';b.textContent=text;
+  b.onclick=handler;resultCard()?.append(b);
 }
 function makeKV(parent,key,value){
   const row=document.createElement('div');row.className='run-kv';
@@ -4354,7 +4370,7 @@ function detailSection(title,className=''){
   const s=document.createElement('section');s.className=`run-detail-section ${className}`.trim();
   const h=document.createElement('h3');h.textContent=title;s.append(h);return s;
 }
-function renderSnapshotDetail(record,{saved=false,rank=null,current=false}={}){
+function renderSnapshotDetail(record,{saved=false,rank=null,current=false,manual=false}={}){
   const root=$('result-details');if(!root||!record)return;
   root.className='result-detail-groups run-detail-layout';root.replaceChildren();
   const overview=detailSection('得点・生態系','run-detail-overview');
@@ -4403,17 +4419,18 @@ function renderSnapshotDetail(record,{saved=false,rank=null,current=false}={}){
   }
   stages.append(stageGrid);
 
-  if(saved||current){
+  if(saved||current||manual){
     const meta=detailSection('記録','run-detail-meta');
     const grid=document.createElement('div');grid.className='run-meta-grid';
-    makeKV(grid,saved?'順位':'区分',saved?`#${rank||'—'}`:'今回スコア');
-    makeKV(grid,'日時',compactDate(record.completedAt));
+    if(saved)makeKV(grid,'順位',`#${rank||'—'}`);
+    else makeKV(grid,'区分',manual?'保存したラン':'今回スコア');
+    makeKV(grid,manual?'保存日時':'日時',compactDate(manual?(record.savedAt||record.completedAt):record.completedAt));
     makeKV(grid,'seed',record.seed||'—').classList.add('run-meta-seed');
     meta.append(grid);root.append(meta);
   }
   root.append(overview,abilities,stages);
 }
-function applyResultHeader(record,{saved=false,rank=null,current=false}={}){
+function applyResultHeader(record,{saved=false,rank=null,current=false,manual=false}={}){
   $('final-score').textContent=formatScore(record.score);
   $('final-set1').textContent=formatScore(record.setScores?.[0]||0);
   $('final-set2').textContent=formatScore(record.setScores?.[1]||0);
@@ -4424,6 +4441,9 @@ function applyResultHeader(record,{saved=false,rank=null,current=false}={}){
   }else if(current){
     resultSnapshotMode='current-score';heading.classList.add('best-detail-heading');heading.dataset.displayHeading='今回スコア';
     heading.setAttribute('aria-label','今回スコア');
+  }else if(manual){
+    resultSnapshotMode='manual';heading.classList.add('best-detail-heading');heading.dataset.displayHeading='保存したラン';
+    heading.setAttribute('aria-label','保存したラン');
   }else{
     resultSnapshotMode='current';heading.classList.remove('best-detail-heading');delete heading.dataset.displayHeading;heading.setAttribute('aria-label','GAME SET');
   }
@@ -4437,6 +4457,12 @@ function showSavedRunDetail(record,rank){
   prepareResultDetailView();applyResultHeader(record,{saved:true,rank});renderSnapshotDetail(record,{saved:true,rank});
   const details=resultCard()?.querySelector('details');if(details)details.open=true;
   addDetailBack();
+}
+function showManualRunDetail(record){
+  if(!record)return;
+  prepareResultDetailView();applyResultHeader(record,{manual:true});renderSnapshotDetail(record,{manual:true});
+  const details=resultCard()?.querySelector('details');if(details)details.open=true;
+  addDetailBack('保存したランへ戻る',returnToManualRuns);
 }
 function showCurrentScoreDetail(){
   if(!session?.runDone)return;const record=buildRunSnapshot(session);
@@ -4537,8 +4563,37 @@ function makeBestScoreRow(record,rank,{current=false,newRecord=null}={}){
   row.innerHTML=`<span class="best-rank">${current?'':rank}</span><strong>${formatScore(record.score)}</strong><small>詳細</small>`;
   row.onclick=()=>current?showCurrentScoreDetail():showSavedRunDetail(record,rank);return row;
 }
+function isManualSaved(record){return !!record&&safeManualRead().some(x=>x.fingerprint===record.fingerprint);}
+function saveCurrentRunManual(){
+  if(!session?.runDone)return;
+  const record=buildRunSnapshot(session),list=safeManualRead();
+  if(list.some(x=>x.fingerprint===record.fingerprint)){renderBestScores(currentNewRecord);return;}
+  if(list.length>=MANUAL_LIMIT){window.alert('保存できるランは10件までです。保存したランを削除してください。');return;}
+  record.savedAt=new Date().toISOString();list.unshift(record);
+  if(!safeManualWrite(list)){window.alert('保存に失敗しました。ブラウザの保存領域を確認してください。');return;}
+  renderBestScores(currentNewRecord);
+}
+function makeManualRunRow(record){
+  const wrap=document.createElement('div');wrap.className='manual-run-row';
+  const detail=document.createElement('button');detail.type='button';detail.className='manual-run-detail';
+  detail.innerHTML=`<span>${compactDate(record.savedAt||record.completedAt)}</span><strong>${formatScore(record.score)}</strong><small>詳細</small>`;
+  detail.onclick=()=>showManualRunDetail(record);
+  const del=document.createElement('button');del.type='button';del.className='manual-run-delete';del.textContent='削除';
+  del.onclick=()=>{if(!window.confirm('この保存したランを削除します。'))return;const list=safeManualRead().filter(x=>x.fingerprint!==record.fingerprint);safeManualWrite(list);renderManualRuns();};
+  wrap.append(detail,del);return wrap;
+}
+function renderManualRuns(){
+  const overlay=ensureBestOverlay(),root=$('best-score-list'),tag=$('best-new-record'),currentRoot=$('best-current-score'),list=safeManualRead();
+  const title=overlay.querySelector('.best-score-head strong');if(title)title.textContent='保存したラン';
+  root.replaceChildren();currentRoot.replaceChildren();tag.textContent=`${list.length} / ${MANUAL_LIMIT}`;
+  if(!list.length){const empty=document.createElement('div');empty.className='best-empty';empty.textContent='保存したランはありません';root.append(empty);}
+  else list.forEach(record=>root.append(makeManualRunRow(record)));
+  const back=document.createElement('button');back.type='button';back.className='saved-runs-back';back.textContent='BEST SCOREへ戻る';back.onclick=()=>renderBestScores(currentNewRecord);currentRoot.append(back);
+  overlay.hidden=false;requestAnimationFrame(positionBestOverlay);
+}
 function renderBestScores(newRecord=currentNewRecord){
   const overlay=ensureBestOverlay(),list=safeBestRead(),root=$('best-score-list'),tag=$('best-new-record'),currentRoot=$('best-current-score');
+  const title=overlay.querySelector('.best-score-head strong');if(title)title.textContent='BEST SCORE';
   root.replaceChildren();currentRoot.replaceChildren();tag.textContent=newRecord?.isNew?`NEW RECORD #${newRecord.rank}`:'';
   if(!list.length){
     const empty=document.createElement('div');empty.className='best-empty';empty.textContent='記録はまだありません';root.append(empty);
@@ -4546,7 +4601,10 @@ function renderBestScores(newRecord=currentNewRecord){
   if(session?.runDone){
     const current=buildRunSnapshot(session),label=document.createElement('div');label.className='best-current-label';
     label.textContent=newRecord?.rank?`今回スコア · BEST #${newRecord.rank}`:'今回スコア';
-    currentRoot.append(label,makeBestScoreRow(current,null,{current:true,newRecord}));
+    const actions=document.createElement('div');actions.className='best-current-actions';
+    const savedNow=isManualSaved(current),save=document.createElement('button');save.type='button';save.className='current-run-save';save.textContent=savedNow?'保存済み':'保存';save.disabled=savedNow;save.onclick=saveCurrentRunManual;
+    const saved=document.createElement('button');saved.type='button';saved.className='saved-runs-open';saved.textContent=`保存したラン (${safeManualRead().length})`;saved.onclick=renderManualRuns;
+    actions.append(save,saved);currentRoot.append(label,makeBestScoreRow(current,null,{current:true,newRecord}),actions);
   }
   overlay.hidden=false;requestAnimationFrame(positionBestOverlay);
 }
@@ -4555,10 +4613,10 @@ function installBestReset(){
   const scoreDetails=[...document.querySelectorAll('.info-tier')].find(s=>s.querySelector('.info-tier-head h2')?.textContent.trim()==='詳細データ');
   if(!scoreDetails||document.getElementById('best-score-reset'))return;
   const details=document.createElement('details');details.className='info-details';
-  details.innerHTML='<summary>記録</summary><div class="info-content"><div class="info-sub"><h3>BEST SCORE</h3><p>このブラウザ・端末に上位5件を保存します。</p><button id="best-score-reset" type="button" class="best-score-reset">BEST SCOREを削除</button></div></div>';
+  details.innerHTML='<summary>記録</summary><div class="info-content"><div class="info-sub"><h3>BEST SCORE</h3><p>このブラウザ・端末に上位3件を自動保存します。残したいランはBEST SCORE画面から別枠で最大10件まで手動保存できます。</p><button id="best-score-reset" type="button" class="best-score-reset">BEST SCOREを削除</button></div></div>';
   scoreDetails.append(details);
   $('best-score-reset').onclick=()=>{
-    if(!window.confirm('BEST SCOREの記録5件を削除します。元に戻せません。'))return;
+    if(!window.confirm('BEST SCOREの記録3件を削除します。元に戻せません。'))return;
     safeBestClear();currentNewRecord=null;if(session?.runDone)renderBestScores(null);
   };
 }
@@ -4643,7 +4701,7 @@ featureStyle.textContent=`
 .best-score-head{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-bottom:5px;color:#e8d089}.best-score-head strong{font-size:10px;letter-spacing:.08em}.best-score-head span{font-size:7px;color:#99d9bf;font-weight:800;white-space:nowrap}
 .best-score-list{display:grid;gap:4px}.best-score-row{width:100%;min-height:29px;padding:3px 6px;display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:5px;align-items:center;border:1px solid rgba(64,86,111,.75);border-radius:7px;background:rgba(21,35,53,.92);text-align:left}
 .best-score-row .best-rank{color:#8295a9;font-size:8px;font-weight:800}.best-score-row strong{text-align:right;color:#edf4fb;font-size:13px;font-variant-numeric:tabular-nums}.best-score-row small{color:#99d9bf;font-size:7px}.best-score-row.new-record{border-color:#91cdb7;box-shadow:inset 0 0 0 1px rgba(153,217,191,.18)}
-.best-current-score{margin-top:6px;padding-top:6px;border-top:1px solid rgba(126,145,164,.18)}.best-current-label{margin:0 2px 4px;color:#72869a;font-size:7px;font-weight:650;letter-spacing:.02em}.best-current-row{border-color:rgba(64,86,111,.58);background:rgba(17,29,43,.82)}
+.best-current-score{margin-top:6px;padding-top:6px;border-top:1px solid rgba(126,145,164,.18)}.best-current-label{margin:0 2px 4px;color:#72869a;font-size:7px;font-weight:650;letter-spacing:.02em}.best-current-row{border-color:rgba(64,86,111,.58);background:rgba(17,29,43,.82)}.best-current-actions{display:grid;grid-template-columns:.72fr 1.28fr;gap:4px;margin-top:4px}.best-current-actions button,.saved-runs-back{min-height:26px;padding:3px 7px;border-radius:7px;border:1px solid rgba(64,86,111,.68);background:rgba(18,31,46,.9);color:#cbd8e5;font-size:8px}.best-current-actions button:disabled{opacity:.55;cursor:default}.manual-run-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px;align-items:stretch}.manual-run-detail{min-width:0;min-height:31px;padding:3px 6px;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:6px;align-items:center;border:1px solid rgba(64,86,111,.75);border-radius:7px;background:rgba(21,35,53,.92);text-align:left}.manual-run-detail span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#8295a9;font-size:7px}.manual-run-detail strong{color:#edf4fb;font-size:12px;font-variant-numeric:tabular-nums}.manual-run-detail small{color:#99d9bf;font-size:7px}.manual-run-delete{min-width:38px;padding:0 7px;border:1px solid rgba(125,76,88,.7);border-radius:7px;background:rgba(48,28,35,.85);color:#d9aeb8;font-size:7px}.saved-runs-back{width:100%;margin-top:2px}
 .best-empty{padding:18px 6px;color:#8fa2b5;font-size:9px;text-align:center}
 #result-heading.best-detail-heading::after{content:attr(data-display-heading)!important}
 #result.set-result-mode #result-heading::after{content:attr(data-display-heading)!important;color:#dbe3eb}
