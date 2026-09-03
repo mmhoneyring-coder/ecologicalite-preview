@@ -1,0 +1,96 @@
+name: Apply grass label cleanup
+
+on:
+  push:
+    branches:
+      - work/grass-label-cleanup-2026-09-04
+    paths:
+      - .github/workflows/apply-grass-label-cleanup.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Verify base
+        run: test "$(git rev-parse HEAD)" = "136885835c8b76e635419b53a6c604c9e95471b6"
+
+      - name: Separate current and historical grass labels
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          readme = Path('tools/balance-diagnostics/README.md')
+          text = readme.read_text()
+          if '草食+2' not in text:
+              raise SystemExit('README: expected old grass +2 labels not found')
+          text = text.replace('草食+2', '草食+3')
+          readme.write_text(text)
+
+          runner = Path('tools/balance-diagnostics/runner.mjs')
+          text = runner.read_text()
+          if '草食+2優先' not in text:
+              raise SystemExit('runner: expected old grass +2 label not found')
+          text = text.replace('草食+2優先', '草食+3優先')
+          runner.write_text(text)
+
+          balance = Path('docs/BALANCE.md')
+          text = balance.read_text()
+          old = '草食 一時投入を +2 → +3。30seedの同条件比較で植物+12との差を縮めつつ万能化しないことを確認'
+          new = '草食 一時投入を +2（旧値）→ +3（現行）。30seedの同条件比較で植物+12との差を縮めつつ万能化しないことを確認'
+          if old not in text:
+              raise SystemExit('BALANCE: expected history wording not found')
+          balance.write_text(text.replace(old, new, 1))
+
+          log = Path('docs/DEVELOPMENT_LOG.md')
+          text = log.read_text()
+          old = '30seed比較では、草食一時投入+2は植物+12優先より全体に見劣りしたため、+3を仮設定して同条件で再比較した。+3では草食一時投入優先の平均得点と植物+12への勝率が改善した一方、植物+12を一律に上回る状態にはならず、双子や肉食察知など相性のある構成で価値が上がった。これを踏まえ、草食一時投入は **取得時 +3** を正式値とした。'
+          new = '30seed比較では、草食一時投入+2（旧値）は植物+12優先より全体に見劣りしたため、+3を仮設定して同条件で再比較した。+3（現行）では草食一時投入優先の平均得点と植物+12への勝率が改善した一方、植物+12を一律に上回る状態にはならず、双子や肉食察知など相性のある構成で価値が上がった。これを踏まえ、草食一時投入は **取得時 +3** を正式値とした。'
+          if old not in text:
+              raise SystemExit('DEVELOPMENT_LOG: expected comparison wording not found')
+          log.write_text(text.replace(old, new, 1))
+          PY
+
+      - name: Validate wording and scope
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          readme = Path('tools/balance-diagnostics/README.md').read_text()
+          runner = Path('tools/balance-diagnostics/runner.mjs').read_text()
+          balance = Path('docs/BALANCE.md').read_text()
+          log = Path('docs/DEVELOPMENT_LOG.md').read_text()
+
+          assert '草食+2' not in readme
+          assert '草食+3' in readme
+          assert '草食+2優先' not in runner
+          assert '草食+3優先' in runner
+          assert '| 草食 一時投入 | 取得時に草食 +3 |' in balance
+          assert '+2（旧値）→ +3（現行）' in balance
+          assert '草食一時投入+2（旧値）' in log
+          assert '+3（現行）' in log
+
+          # Old +2 wording is allowed only as explicitly historical text outside archives.
+          for path in [Path('docs/BALANCE.md'), Path('docs/DEVELOPMENT_LOG.md'), Path('tools/balance-diagnostics/README.md'), Path('tools/balance-diagnostics/runner.mjs')]:
+              for i, line in enumerate(path.read_text().splitlines(), 1):
+                  if '草食+2' in line or '草食 一時投入を +2' in line:
+                      if '旧値' not in line:
+                          raise SystemExit(f'unmarked old value: {path}:{i}: {line}')
+          PY
+          test "$(git diff --name-only | sort)" = "$(printf '%s\n' docs/BALANCE.md docs/DEVELOPMENT_LOG.md tools/balance-diagnostics/README.md tools/balance-diagnostics/runner.mjs | sort)"
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/BALANCE.md docs/DEVELOPMENT_LOG.md tools/balance-diagnostics/README.md tools/balance-diagnostics/runner.mjs
+          git commit -m "Clarify current and legacy grass one-shot labels"
+          git push origin HEAD:main
