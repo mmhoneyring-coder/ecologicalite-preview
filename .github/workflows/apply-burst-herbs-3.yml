@@ -1,0 +1,87 @@
+name: Apply grass +3 balance
+
+on:
+  push:
+    branches:
+      - work/burst-herbs-3-2026-09-04
+    paths:
+      - .github/workflows/apply-burst-herbs-3.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Verify base
+        run: test "$(git rev-parse HEAD)" = "3f23838ee22cdade6ee778fde2d3d9e883f9280a"
+
+      - name: Apply grass +3
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          index = Path('index.html')
+          text = index.read_text()
+          targets = {
+              'N_BURST_HERBS: 2': 'N_BURST_HERBS: 3',
+              '"N_BURST_HERBS": 2': '"N_BURST_HERBS": 3',
+              '草食+2（一時投入）': '草食+3（一時投入）',
+              '取得時に草食 +2': '取得時に草食 +3',
+          }
+          for old, new in targets.items():
+              if old not in text:
+                  raise SystemExit(f'missing index target: {old}')
+              text = text.replace(old, new)
+          for old in targets:
+              if old in text:
+                  raise SystemExit(f'old index value remains: {old}')
+          index.write_text(text)
+
+          balance = Path('docs/BALANCE.md')
+          b = balance.read_text()
+          if '基準日: 2026-09-02' in b:
+              b = b.replace('基準日: 2026-09-02', '基準日: 2026-09-04', 1)
+          old = '| 草食 一時投入 | 取得時に草食 +2 |'
+          new = '| 草食 一時投入 | 取得時に草食 +3 |'
+          if old not in b:
+              raise SystemExit('missing BALANCE grass +2 row')
+          b = b.replace(old, new, 1)
+          history = '| 2026-09-04 | バランス調整 | 草食 一時投入を +2 → +3。30seedの同条件比較で植物+12との差を縮めつつ万能化しないことを確認 |'
+          if history not in b:
+              b = b.rstrip() + '\n' + history + '\n'
+          balance.write_text(b)
+
+          log = Path('docs/DEVELOPMENT_LOG.md')
+          d = log.read_text()
+          heading = '## 18. バランス診断runnerと草食一時投入の調整'
+          if heading not in d:
+              d = d.rstrip() + '''\n\n## 18. バランス診断runnerと草食一時投入の調整\n\n2026-09-04、完成後のバランスを大きく崩さず診断するため、現行 `index.html` のruntimeを直接使う診断runnerを追加した。8種のSET1能力を軸に、狙いビルド、一時投入優先、植物+12優先、草食一時投入優先、一時投入なし、得点優先、混合の方針を同じseed群で比較する。runnerは自動でバランス値を採用せず、問題候補を見つける用途に限定する。\n\n30seed比較では、草食一時投入+2は植物+12優先より全体に見劣りしたため、+3を仮設定して同条件で再比較した。+3では草食一時投入優先の平均得点と植物+12への勝率が改善した一方、植物+12を一律に上回る状態にはならず、双子や肉食察知など相性のある構成で価値が上がった。これを踏まえ、草食一時投入は **取得時 +3** を正式値とした。\n\nSET能力については、平均得点だけで一律評価しない。植物察知・危険察知は得点上限が低めでも、摂食安定・草食生存・捕食抑制といった役割差を持つため、今後も経路・絶滅・捕食・繁殖を併せて判断する。\n'''
+          log.write_text(d)
+          PY
+
+      - name: Validate
+        run: |
+          grep -q 'N_BURST_HERBS: 3' index.html
+          grep -q '"N_BURST_HERBS": 3' index.html
+          grep -q '草食+3（一時投入）' index.html
+          grep -q '取得時に草食 +3' index.html
+          ! grep -q '草食+2（一時投入）' index.html
+          grep -q '| 草食 一時投入 | 取得時に草食 +3 |' docs/BALANCE.md
+          grep -q '## 18. バランス診断runnerと草食一時投入の調整' docs/DEVELOPMENT_LOG.md
+          git diff --check
+
+      - name: Commit and push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html docs/BALANCE.md docs/DEVELOPMENT_LOG.md
+          git commit -m "Increase grass one-shot to 3"
+          git push origin HEAD:main
