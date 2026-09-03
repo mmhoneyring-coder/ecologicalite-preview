@@ -1,0 +1,42 @@
+name: Apply balance diagnostic runner v2
+
+on:
+  push:
+    branches:
+      - work/balance-diagnostic-runner-2026-09-04
+    paths:
+      - .github/workflows/apply-balance-diagnostics-v2.yml
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: work/balance-diagnostic-runner-2026-09-04
+          fetch-depth: 0
+
+      - name: Patch runner and docs
+        run: python .github/scripts/patch-balance-diagnostics-v2.py
+
+      - name: Validate patch
+        run: |
+          node --check tools/balance-diagnostics/runner.mjs
+          grep -q "burst-plants-first" tools/balance-diagnostics/runner.mjs
+          grep -q "burst-herbs-first" tools/balance-diagnostics/runner.mjs
+          grep -q "主要能力積み/10" tools/balance-diagnostics/runner.mjs
+          grep -q "-eq 1680" .github/workflows/balance-diagnostic-runner.yml
+          grep -q "-eq 20160" .github/workflows/balance-diagnostic-runner.yml
+
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tools/balance-diagnostics/runner.mjs tools/balance-diagnostics/README.md .github/workflows/balance-diagnostic-runner.yml
+          git diff --cached --quiet && exit 0
+          git commit -m "Expand balance diagnostic comparisons"
+          git push origin HEAD:work/balance-diagnostic-runner-2026-09-04
