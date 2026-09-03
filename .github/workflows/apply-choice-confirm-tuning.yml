@@ -1,0 +1,48 @@
+name: Apply choice confirmation tuning
+on:
+  push:
+    branches:
+      - work/choice-confirm-tuning-2026-09-03
+    paths:
+      - .github/workflows/apply-choice-confirm-tuning.yml
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout patch source
+        uses: actions/checkout@v4
+        with:
+          ref: work/choice-confirm-tuning-2026-09-03
+      - name: Preserve patch script
+        run: cp .github/scripts/apply-choice-confirm-tuning.py /tmp/apply-choice-confirm-tuning.py
+      - name: Checkout verified main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Verify source commit
+        run: test "$(git rev-parse HEAD)" = "e710ccdbbb9a3000e4779624eb3ad9d409e4434b"
+      - name: Apply patch
+        run: python /tmp/apply-choice-confirm-tuning.py
+      - name: Validate patch
+        run: |
+          grep -q 'const CHOICE_CONFIRM_MS=500;' index.html
+          grep -q 'user-select:none' index.html
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          s=Path('index.html').read_text()
+          m=re.search(r'<script id="v1r-runtime">(.*?)</script>',s,re.S)
+          assert m, 'runtime script missing'
+          Path('/tmp/runtime.js').write_text(m.group(1))
+          PY
+          node --check /tmp/runtime.js
+      - name: Commit to main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html
+          git commit -m 'Tune ability choice confirmation feedback'
+          git push origin HEAD:main
