@@ -1,0 +1,55 @@
+name: Apply manual saved runs v2
+
+on:
+  push:
+    branches:
+      - work/manual-saved-runs-trigger2-2026-09-03
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout patch source
+        uses: actions/checkout@v4
+
+      - name: Preserve patch script
+        run: cp .github/scripts/manual_saved_runs_patch.py /tmp/manual_saved_runs_patch.py
+
+      - name: Checkout verified main
+        run: |
+          git fetch origin main
+          git checkout -B apply origin/main
+          test "$(git rev-parse HEAD)" = "afbb533b315da4e0512d8f271d7259117a9eb653"
+
+      - name: Apply patch
+        run: python /tmp/manual_saved_runs_patch.py
+
+      - name: Validate patch
+        run: |
+          test "$(git diff --name-only)" = "index.html"
+          git diff --check
+          grep -q 'const BEST_LIMIT=3;' index.html
+          grep -q 'const MANUAL_LIMIT=10;' index.html
+          grep -q '保存できるランは10件までです。保存したランを削除してください。' index.html
+          grep -q '保存したランへ戻る' index.html
+          grep -q '上位3件を自動保存します' index.html
+          python - <<'PY'
+          import re
+          from pathlib import Path
+          text=Path('index.html').read_text(encoding='utf-8')
+          scripts=re.findall(r'<script(?: [^>]*)?>(.*?)</script>',text,re.S)
+          runtime=next(x for x in scripts if 'BEST_SCORE_VERSION' in x)
+          Path('/tmp/runtime.js').write_text(runtime,encoding='utf-8')
+          PY
+          node --check /tmp/runtime.js
+
+      - name: Commit to main
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Add manual saved runs and keep BEST top 3"
+          git push origin HEAD:main
