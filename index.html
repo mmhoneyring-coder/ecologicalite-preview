@@ -4336,10 +4336,14 @@ function storeBestSnapshot(record){
 }
 const resultCard=()=>document.querySelector('#result>.result-card');
 const clearDetailBack=()=>document.getElementById('best-detail-back')?.remove();
+function returnToBestScores(){
+  const result=$('result');if(result)result.hidden=true;
+  renderBestScores(currentNewRecord);
+}
 function addDetailBack(){
   clearDetailBack();
-  const b=document.createElement('button');b.id='best-detail-back';b.type='button';b.textContent='GAME SETへ戻る';
-  b.onclick=()=>showCurrentRunDetail();resultCard()?.append(b);
+  const b=document.createElement('button');b.id='best-detail-back';b.type='button';b.textContent='BEST SCOREへ戻る';
+  b.onclick=returnToBestScores;resultCard()?.append(b);
 }
 function makeKV(parent,key,value){
   const row=document.createElement('div');row.className='run-kv';
@@ -4350,7 +4354,7 @@ function detailSection(title,className=''){
   const s=document.createElement('section');s.className=`run-detail-section ${className}`.trim();
   const h=document.createElement('h3');h.textContent=title;s.append(h);return s;
 }
-function renderSnapshotDetail(record,{saved=false,rank=null}={}){
+function renderSnapshotDetail(record,{saved=false,rank=null,current=false}={}){
   const root=$('result-details');if(!root||!record)return;
   root.className='result-detail-groups run-detail-layout';root.replaceChildren();
   const overview=detailSection('得点・生態系','run-detail-overview');
@@ -4399,17 +4403,17 @@ function renderSnapshotDetail(record,{saved=false,rank=null}={}){
   }
   stages.append(stageGrid);
 
-  if(saved){
+  if(saved||current){
     const meta=detailSection('記録','run-detail-meta');
     const grid=document.createElement('div');grid.className='run-meta-grid';
-    makeKV(grid,'順位',`#${rank||'—'}`);
+    makeKV(grid,saved?'順位':'区分',saved?`#${rank||'—'}`:'今回スコア');
     makeKV(grid,'日時',compactDate(record.completedAt));
     makeKV(grid,'seed',record.seed||'—').classList.add('run-meta-seed');
     meta.append(grid);root.append(meta);
   }
   root.append(overview,abilities,stages);
 }
-function applyResultHeader(record,{saved=false,rank=null}={}){
+function applyResultHeader(record,{saved=false,rank=null,current=false}={}){
   $('final-score').textContent=formatScore(record.score);
   $('final-set1').textContent=formatScore(record.setScores?.[0]||0);
   $('final-set2').textContent=formatScore(record.setScores?.[1]||0);
@@ -4417,12 +4421,26 @@ function applyResultHeader(record,{saved=false,rank=null}={}){
   if(saved){
     resultSnapshotMode='saved';heading.classList.add('best-detail-heading');heading.dataset.displayHeading=`BEST #${rank}`;
     heading.setAttribute('aria-label',`BEST #${rank}`);
+  }else if(current){
+    resultSnapshotMode='current-score';heading.classList.add('best-detail-heading');heading.dataset.displayHeading='今回スコア';
+    heading.setAttribute('aria-label','今回スコア');
   }else{
     resultSnapshotMode='current';heading.classList.remove('best-detail-heading');delete heading.dataset.displayHeading;heading.setAttribute('aria-label','GAME SET');
   }
 }
+function prepareResultDetailView(){
+  hideBestScores();
+  const result=$('result');if(result){result.hidden=false;result.classList.remove('set-result-mode');result.classList.add('game-set-result-mode');}
+  hideGameSetBestButton();
+}
 function showSavedRunDetail(record,rank){
-  applyResultHeader(record,{saved:true,rank});renderSnapshotDetail(record,{saved:true,rank});
+  prepareResultDetailView();applyResultHeader(record,{saved:true,rank});renderSnapshotDetail(record,{saved:true,rank});
+  const details=resultCard()?.querySelector('details');if(details)details.open=true;
+  addDetailBack();
+}
+function showCurrentScoreDetail(){
+  if(!session?.runDone)return;const record=buildRunSnapshot(session);
+  prepareResultDetailView();applyResultHeader(record,{current:true});renderSnapshotDetail(record,{current:true});
   const details=resultCard()?.querySelector('details');if(details)details.open=true;
   addDetailBack();
 }
@@ -4477,10 +4495,23 @@ function ensureSetResultNext(){
   const card=resultCard(),details=card?.querySelector('details');if(card)card.insertBefore(button,details||null);return button;
 }
 function hideSetResultNext(){const button=$('set-result-next');if(button)button.hidden=true;}
+function ensureGameSetBestButton(){
+  let button=$('game-set-best');
+  if(!button){
+    button=document.createElement('button');button.id='game-set-best';button.type='button';button.className='primary game-set-best';button.textContent='BEST SCORE';button.setAttribute('aria-label','BEST SCOREを表示');
+    button.onclick=()=>{const result=$('result');if(result)result.hidden=true;renderBestScores(currentNewRecord);};
+  }
+  const card=resultCard(),details=card?.querySelector('details');if(card)card.insertBefore(button,details||null);return button;
+}
+function hideGameSetBestButton(){const button=$('game-set-best');if(button)button.hidden=true;}
+function showGameSetBestButton(){
+  const result=$('result');if(result){result.classList.remove('set-result-mode');result.classList.add('game-set-result-mode');}
+  const button=ensureGameSetBestButton();button.hidden=false;
+}
 function showSetResult(){
-  hideBestScores();clearDetailBack();document.body.classList.remove('ui-game-set');document.body.classList.add('ui-set-result');
+  hideBestScores();hideGameSetBestButton();clearDetailBack();document.body.classList.remove('ui-game-set');document.body.classList.add('ui-set-result');
   const setNo=session.set,record=buildSetSnapshot(session,setNo),result=$('result'),heading=$('result-heading');
-  result.classList.add('set-result-mode');result.hidden=false;$('status').textContent=`SET ${setNo} COMPLETE`;$('result-eyebrow').textContent='SET COMPLETE';
+  result.classList.remove('game-set-result-mode');result.classList.add('set-result-mode');result.hidden=false;$('status').textContent=`SET ${setNo} COMPLETE`;$('result-eyebrow').textContent='SET COMPLETE';
   heading.classList.remove('best-detail-heading');heading.dataset.displayHeading=`SET ${setNo} RESULT`;heading.setAttribute('aria-label',`SET ${setNo} RESULT`);
   label($('result-score-label'),'SET SCORE');$('final-score').textContent=formatScore(record.score);renderSetSnapshotDetail(record,setNo);
   const details=resultCard()?.querySelector('details');if(details){details.open=false;const summary=details.querySelector('summary');if(summary)summary.textContent='詳細';}
@@ -4490,33 +4521,33 @@ function showSetResult(){
 function ensureBestOverlay(){
   if(bestScoreOverlay)return bestScoreOverlay;
   const overlay=document.createElement('div');overlay.id='best-score-overlay';overlay.hidden=true;
-  overlay.innerHTML='<div class="best-shade best-shade-graph"></div><div class="best-shade best-shade-abilities"></div><div class="best-score-card"><div class="best-score-head"><strong>BEST SCORE</strong><span id="best-new-record"></span></div><div id="best-score-list" class="best-score-list"></div></div>';
+  overlay.innerHTML='<div class="best-score-card"><div class="best-score-head"><strong>BEST SCORE</strong><span id="best-new-record"></span></div><div id="best-score-list" class="best-score-list"></div><div id="best-current-score" class="best-current-score"></div></div>';
   document.body.append(overlay);bestScoreOverlay=overlay;return overlay;
 }
 function positionBestOverlay(){
-  const overlay=ensureBestOverlay(),graph=$('score-panel'),abilities=document.querySelector('.abilities-panel');
-  if(overlay.hidden||!graph||!abilities)return;
-  const gr=graph.getBoundingClientRect(),ar=abilities.getBoundingClientRect(),graphShade=overlay.querySelector('.best-shade-graph'),abilityShade=overlay.querySelector('.best-shade-abilities'),card=overlay.querySelector('.best-score-card');
-  const place=(el,r)=>{el.style.left=`${r.left}px`;el.style.top=`${r.top}px`;el.style.width=`${r.width}px`;el.style.height=`${r.height}px`;};
-  place(graphShade,gr);place(abilityShade,ar);
-  if(desktopQuery.matches){
-    card.style.left=`${gr.left}px`;card.style.top=`${gr.top}px`;card.style.width=`${gr.width}px`;card.style.height=`${Math.min(gr.height,ar.height)}px`;
-  }else{
-    const left=Math.min(gr.left,ar.left),top=Math.min(gr.top,ar.top),right=Math.max(gr.right,ar.right),bottom=Math.min(gr.bottom,ar.bottom);
-    card.style.left=`${left}px`;card.style.top=`${top}px`;card.style.width=`${right-left}px`;card.style.height=`${Math.max(0,bottom-top)}px`;
-  }
+  const overlay=ensureBestOverlay(),board=document.querySelector('.board'),card=overlay.querySelector('.best-score-card');
+  if(overlay.hidden||!board||!card)return;
+  const r=board.getBoundingClientRect(),inset=Math.max(5,Math.min(8,r.width*.012));
+  card.style.left=`${r.left+inset}px`;card.style.top=`${r.top+inset}px`;card.style.width=`${Math.max(0,r.width-inset*2)}px`;card.style.height=`${Math.max(0,r.height-inset*2)}px`;
 }
-function renderBestScores(newRecord=null){
-  const overlay=ensureBestOverlay(),list=safeBestRead(),root=$('best-score-list'),tag=$('best-new-record');
-  root.replaceChildren();tag.textContent=newRecord?.isNew?`NEW RECORD #${newRecord.rank}`:'';
+function makeBestScoreRow(record,rank,{current=false,newRecord=null}={}){
+  const row=document.createElement('button');row.type='button';row.className='best-score-row';
+  if(current)row.classList.add('best-current-row');
+  if(!current&&newRecord?.isNew&&newRecord.rank===rank)row.classList.add('new-record');
+  row.innerHTML=`<span class="best-rank">${current?'':rank}</span><strong>${formatScore(record.score)}</strong><small>詳細</small>`;
+  row.onclick=()=>current?showCurrentScoreDetail():showSavedRunDetail(record,rank);return row;
+}
+function renderBestScores(newRecord=currentNewRecord){
+  const overlay=ensureBestOverlay(),list=safeBestRead(),root=$('best-score-list'),tag=$('best-new-record'),currentRoot=$('best-current-score');
+  root.replaceChildren();currentRoot.replaceChildren();tag.textContent=newRecord?.isNew?`NEW RECORD #${newRecord.rank}`:'';
   if(!list.length){
     const empty=document.createElement('div');empty.className='best-empty';empty.textContent='記録はまだありません';root.append(empty);
-  }else list.forEach((record,index)=>{
-    const row=document.createElement('button');row.type='button';row.className='best-score-row';
-    if(newRecord?.isNew&&newRecord.rank===index+1)row.classList.add('new-record');
-    row.innerHTML=`<span class="best-rank">${index+1}</span><strong>${formatScore(record.score)}</strong><small>詳細</small>`;
-    row.onclick=()=>showSavedRunDetail(record,index+1);root.append(row);
-  });
+  }else list.forEach((record,index)=>root.append(makeBestScoreRow(record,index+1,{newRecord})));
+  if(session?.runDone){
+    const current=buildRunSnapshot(session),label=document.createElement('div');label.className='best-current-label';
+    label.textContent=newRecord?.rank?`今回スコア · BEST #${newRecord.rank}`:'今回スコア';
+    currentRoot.append(label,makeBestScoreRow(current,null,{current:true,newRecord}));
+  }
   overlay.hidden=false;requestAnimationFrame(positionBestOverlay);
 }
 function hideBestScores(){const overlay=ensureBestOverlay();overlay.hidden=true;}
@@ -4534,7 +4565,7 @@ function installBestReset(){
 function recordCompletedRun(){
   if(!session?.runDone)return null;
   const outcome=storeBestSnapshot(buildRunSnapshot(session));currentNewRecord=outcome;
-  renderBestScores(outcome);return outcome;
+  return outcome;
 }
 
 function requestReproductionPaint(){
@@ -4588,17 +4619,17 @@ initializeUi=function(){
   legacyInitializeUi();installBestReset();ensureBestOverlay();
 };
 const legacyChoose=choose;
-choose=function(){hideBestScores();currentNewRecord=null;clearDetailBack();return legacyChoose();};
+choose=function(){hideBestScores();hideGameSetBestButton();currentNewRecord=null;clearDetailBack();const result=$('result');if(result)result.classList.remove('game-set-result-mode');return legacyChoose();};
 const legacyRunStage=runStage;
 runStage=function(){
-  hideBestScores();reproFx=[];if(reproFxRaf){cancelAnimationFrame(reproFxRaf);reproFxRaf=0;}legacyRunStage();installReproductionObserver();
+  hideBestScores();hideGameSetBestButton();reproFx=[];if(reproFxRaf){cancelAnimationFrame(reproFxRaf);reproFxRaf=0;}legacyRunStage();installReproductionObserver();
 };
 const legacyPaint=paint;
 paint=function(){legacyPaint();drawReproductionFx();};
 const legacyFinish=finish;
 finish=function(){
   legacyFinish();
-  if(session?.runDone){recordCompletedRun();positionBestOverlay();}
+  if(session?.runDone){recordCompletedRun();hideBestScores();showGameSetBestButton();}
 };
 const featureResize=()=>requestAnimationFrame(()=>{if(session?.runDone&&!ensureBestOverlay().hidden)positionBestOverlay();});
 window.addEventListener('resize',featureResize);
@@ -4608,11 +4639,11 @@ featureStyle.id='best-score-repro-feature-styles';
 featureStyle.textContent=`
 #best-score-overlay[hidden]{display:none!important}
 #best-score-overlay{position:fixed;inset:0;z-index:70;pointer-events:none}
-.best-shade{position:fixed;border-radius:10px;background:rgba(3,8,13,.54);backdrop-filter:blur(1.7px);-webkit-backdrop-filter:blur(1.7px);pointer-events:none}
-.best-score-card{position:fixed;z-index:2;padding:8px;border:1px solid rgba(91,116,141,.72);border-radius:10px;background:rgba(13,22,32,.91);box-shadow:0 12px 30px rgba(0,0,0,.3);pointer-events:auto;overflow:auto}
+.best-score-card{position:fixed;z-index:2;padding:8px;border:1px solid rgba(91,116,141,.72);border-radius:10px;background:rgba(13,22,32,.93);box-shadow:0 12px 30px rgba(0,0,0,.3);pointer-events:auto;overflow:auto;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px)}
 .best-score-head{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-bottom:5px;color:#e8d089}.best-score-head strong{font-size:10px;letter-spacing:.08em}.best-score-head span{font-size:7px;color:#99d9bf;font-weight:800;white-space:nowrap}
 .best-score-list{display:grid;gap:4px}.best-score-row{width:100%;min-height:29px;padding:3px 6px;display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:5px;align-items:center;border:1px solid rgba(64,86,111,.75);border-radius:7px;background:rgba(21,35,53,.92);text-align:left}
 .best-score-row .best-rank{color:#8295a9;font-size:8px;font-weight:800}.best-score-row strong{text-align:right;color:#edf4fb;font-size:13px;font-variant-numeric:tabular-nums}.best-score-row small{color:#99d9bf;font-size:7px}.best-score-row.new-record{border-color:#91cdb7;box-shadow:inset 0 0 0 1px rgba(153,217,191,.18)}
+.best-current-score{margin-top:6px;padding-top:6px;border-top:1px solid rgba(126,145,164,.18)}.best-current-label{margin:0 2px 4px;color:#72869a;font-size:7px;font-weight:650;letter-spacing:.02em}.best-current-row{border-color:rgba(64,86,111,.58);background:rgba(17,29,43,.82)}
 .best-empty{padding:18px 6px;color:#8fa2b5;font-size:9px;text-align:center}
 #result-heading.best-detail-heading::after{content:attr(data-display-heading)!important}
 #result.set-result-mode #result-heading::after{content:attr(data-display-heading)!important;color:#dbe3eb}
@@ -4624,11 +4655,11 @@ featureStyle.textContent=`
 #result.set-result-mode .run-stage-set-head,#result.set-result-mode .run-stage-table tbody th{color:#c8d3dd}
 #result.set-result-mode .run-set-grid.set-result-single,#result.set-result-mode .run-stage-grid.set-result-single{grid-template-columns:1fr!important}
 #result.set-result-mode details>summary{color:#cbd6df}
-#result.set-result-mode{align-items:flex-end!important;padding-top:8px!important;padding-bottom:14px!important}
-#set-result-next{box-sizing:border-box!important;width:100%!important;height:44px!important;min-height:44px!important;margin-top:10px!important;padding:0 14px!important;border:1px solid #818b95!important;border-radius:10px!important;background:linear-gradient(180deg,#2a3036 0%,#20262c 100%)!important;color:#eef2f5!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.10)!important;font-size:14px!important;font-weight:800!important;line-height:42px!important;letter-spacing:.02em!important}
-#result.set-result-mode details{margin-top:12px!important;padding-top:8px!important;border-top:1px solid rgba(132,148,164,.28)!important}
+#result.set-result-mode,#result.game-set-result-mode{align-items:flex-end!important;padding-top:8px!important;padding-bottom:14px!important}
+#set-result-next,#game-set-best{box-sizing:border-box!important;width:100%!important;height:44px!important;min-height:44px!important;margin-top:10px!important;padding:0 14px!important;border:1px solid #818b95!important;border-radius:10px!important;background:linear-gradient(180deg,#2a3036 0%,#20262c 100%)!important;color:#eef2f5!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.10)!important;font-size:14px!important;font-weight:800!important;line-height:42px!important;letter-spacing:.02em!important}
+#result.set-result-mode details,#result.game-set-result-mode details{margin-top:12px!important;padding-top:8px!important;border-top:1px solid rgba(132,148,164,.28)!important}
 #result.set-result-mode details>summary{min-height:28px!important;padding:4px 2px!important;color:#9eabb7!important;font-size:9px!important;font-weight:650!important}
-@media(max-width:390px){#result.set-result-mode{padding-top:6px!important;padding-bottom:10px!important}#set-result-next{height:44px!important;min-height:44px!important;font-size:13.5px!important;line-height:42px!important}}
+@media(max-width:390px){#result.set-result-mode,#result.game-set-result-mode{padding-top:6px!important;padding-bottom:10px!important}#set-result-next,#game-set-best{height:44px!important;min-height:44px!important;font-size:13.5px!important;line-height:42px!important}}
 .result-panel.result-overlay-panel .result-card{width:min(96%,680px)!important}
 #result-details.run-detail-layout{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:7px!important;margin:6px 0 2px!important}
 .run-detail-section{min-width:0;padding:7px;border:1px solid rgba(93,117,141,.26);border-radius:8px;background:rgba(9,16,24,.36)}.run-detail-section>h3{margin:0 0 5px;color:#edf4fb;font-size:9.5px}.run-detail-stages{grid-column:1/-1}.run-detail-meta{grid-column:1/-1}
