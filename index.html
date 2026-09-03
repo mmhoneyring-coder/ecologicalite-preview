@@ -4437,7 +4437,7 @@ function buildSetSnapshot(s,setNo=1){
   const sumScore=key=>results.reduce((n,r)=>n+Number(r.score?.components?.[key]||0),0);
   const sumEvent=key=>results.reduce((n,r)=>n+Number(r.events?.[key]||0),0);
   const score=results.reduce((n,r)=>n+Number(r.score?.total||0),0);
-  const setAbilities=(s.selectionHistory||[]).filter(e=>e.type==='set'&&Number(e.set)===Number(setNo)).map(e=>({set:e.set,id:e.id,name:e.name}));
+  const setAbilities=(s.selectionHistory||[]).filter(e=>e.type==='set'&&Number(e.set)===Number(setNo)&&e.selected).map(e=>({set:e.set,id:e.selected.id,name:e.selected.name}));
   const normalAbilities=Object.entries(s.state?.normalStacks||{}).filter(([,count])=>Number(count)>0).map(([id,count])=>({id,name:s.engine.NORMAL_ABILITIES[id]?.name||id,count:Number(count)}));
   const stages=results.map(r=>({set:r.set,stage:r.stage,plants:Number(r.counts?.plants||0),herbs:Number(r.counts?.herbs||0),carns:Number(r.counts?.carns||0),score:Number(r.score?.total||0)}));
   return {score,scoreComponents:Object.fromEntries(snapshotScoreKeys.map(([key])=>[key,sumScore(key)])),ecology:{plantEaten:sumEvent('plantEaten'),herbEaten:sumEvent('herbEaten'),herbBirths:sumEvent('herbBirths'),carnBirths:sumEvent('carnBirths'),herbNaturalDeaths:sumEvent('herbNaturalDeaths'),carnNaturalDeaths:sumEvent('carnNaturalDeaths')},setAbilities,normalAbilities,stages};
@@ -4469,10 +4469,12 @@ function renderSetSnapshotDetail(record,setNo=1){
   root.append(overview,abilities,stages);
 }
 function ensureSetResultNext(){
-  let button=$('set-result-next');if(button)return button;
-  button=document.createElement('button');button.id='set-result-next';button.type='button';button.className='primary set-result-next';button.textContent='SET 2へ';button.setAttribute('aria-label','SET 2の能力選択へ進む');
-  button.onclick=()=>{hideSetResultNext();document.body.classList.remove('ui-set-result');$('result').classList.remove('set-result-mode');selectSecondSet();};
-  resultCard()?.append(button);return button;
+  let button=$('set-result-next');
+  if(!button){
+    button=document.createElement('button');button.id='set-result-next';button.type='button';button.className='primary set-result-next';button.textContent='SET 2へ';button.setAttribute('aria-label','SET 2の能力選択へ進む');
+    button.onclick=()=>{hideSetResultNext();document.body.classList.remove('ui-set-result');$('result').classList.remove('set-result-mode');selectSecondSet();};
+  }
+  const card=resultCard(),details=card?.querySelector('details');if(card)card.insertBefore(button,details||null);return button;
 }
 function hideSetResultNext(){const button=$('set-result-next');if(button)button.hidden=true;}
 function showSetResult(){
@@ -4622,9 +4624,11 @@ featureStyle.textContent=`
 #result.set-result-mode .run-stage-set-head,#result.set-result-mode .run-stage-table tbody th{color:#c8d3dd}
 #result.set-result-mode .run-set-grid.set-result-single,#result.set-result-mode .run-stage-grid.set-result-single{grid-template-columns:1fr!important}
 #result.set-result-mode details>summary{color:#cbd6df}
-#result.set-result-mode{align-items:flex-start!important;padding-top:18px!important}
+#result.set-result-mode{align-items:flex-end!important;padding-top:8px!important;padding-bottom:14px!important}
 #set-result-next{box-sizing:border-box!important;width:100%!important;height:44px!important;min-height:44px!important;margin-top:10px!important;padding:0 14px!important;border:1px solid #818b95!important;border-radius:10px!important;background:linear-gradient(180deg,#2a3036 0%,#20262c 100%)!important;color:#eef2f5!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.10)!important;font-size:14px!important;font-weight:800!important;line-height:42px!important;letter-spacing:.02em!important}
-@media(max-width:390px){#result.set-result-mode{padding-top:14px!important}#set-result-next{height:44px!important;min-height:44px!important;font-size:13.5px!important;line-height:42px!important}}
+#result.set-result-mode details{margin-top:12px!important;padding-top:8px!important;border-top:1px solid rgba(132,148,164,.28)!important}
+#result.set-result-mode details>summary{min-height:28px!important;padding:4px 2px!important;color:#9eabb7!important;font-size:9px!important;font-weight:650!important}
+@media(max-width:390px){#result.set-result-mode{padding-top:6px!important;padding-bottom:10px!important}#set-result-next{height:44px!important;min-height:44px!important;font-size:13.5px!important;line-height:42px!important}}
 .result-panel.result-overlay-panel .result-card{width:min(96%,680px)!important}
 #result-details.run-detail-layout{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:7px!important;margin:6px 0 2px!important}
 .run-detail-section{min-width:0;padding:7px;border:1px solid rgba(93,117,141,.26);border-radius:8px;background:rgba(9,16,24,.36)}.run-detail-section>h3{margin:0 0 5px;color:#edf4fb;font-size:9.5px}.run-detail-stages{grid-column:1/-1}.run-detail-meta{grid-column:1/-1}
