@@ -177,14 +177,17 @@ GitHub repository:
 
 ### 完成基準
 
-- completion commit: `b565c8bfa580c2730b4ce1c4b08e71bb287cfc83`
-- frozen branch: `snapshot/v1r-complete-2026-09-02`
+- 最終完成日: 2026-09-04
+- 最終ゲーム内容checkpoint: `1d0d05ae05b11d7954fdd6db63ae1889757505c5`
+- final snapshot: `snapshot/v1r-final-2026-09-04`
+- 初回開発完了commit: `b565c8bfa580c2730b4ce1c4b08e71bb287cfc83`
+- initial snapshot: `snapshot/v1r-complete-2026-09-02`
 
 ### 現在の扱い
 
-**現行版。**
+**現行完成版。**
 
-2026-09-02時点で開発完了とし、今後は必要に応じたバランス調整・不具合修正・軽微なUI修正を中心とする。
+2026-09-04に追加バランス診断まで完了し、UI・演出・能力・得点を含む現行状態を完成版として固定した。能動的な開発・バランス探索は終了し、以後は明確な不具合または実プレイで具体的な改善理由が生じた場合のみ修正する。
 
 現在仕様の正本:
 
