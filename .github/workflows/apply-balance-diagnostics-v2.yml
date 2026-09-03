@@ -32,11 +32,11 @@ jobs:
           grep -q "-eq 1680" .github/workflows/balance-diagnostic-runner.yml
           grep -q "-eq 20160" .github/workflows/balance-diagnostic-runner.yml
 
-      - name: Commit patch
+      - name: Commit runner and docs
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tools/balance-diagnostics/runner.mjs tools/balance-diagnostics/README.md .github/workflows/balance-diagnostic-runner.yml
+          git add tools/balance-diagnostics/runner.mjs tools/balance-diagnostics/README.md
           git diff --cached --quiet && exit 0
           git commit -m "Expand balance diagnostic comparisons"
           git push origin HEAD:work/balance-diagnostic-runner-2026-09-04
