@@ -311,3 +311,20 @@ UI・操作・演出についても、現時点で追加必須の項目はない
 - final snapshot: `snapshot/v1r-final-2026-09-04`
 - 初回開発完了checkpoint: `b565c8bfa580c2730b4ce1c4b08e71bb287cfc83`
 
+## 20. GitHub復旧後のDrive再構築版との照合（2026-10-08）
+
+GitHub復旧後、完成時main 9419f980e8718145c2402fc867338acda8f839dc とDrive側 EcologicaLite_v1R.html を直接取得し、差分・実動作・画面を比較。復元版が常に優れるとはせず、機能ごとに判断した。
+
+- PC配置: GitHub完成版の上寄せ・3列比率を採用。Driveで増えた過度な縦拡大を抑制。
+- スマホ選択・結果・BEST表示: Driveの画面全体オーバーレイを維持。
+- 通常能力説明: Driveの具体的な得点対象・stack表示に、GitHubの補足説明の長所を追加。
+- 個体タップ: GitHubの近傍許容判定、重なり候補の優先順と順送りを採用。
+- 繁殖演出: GitHubの約400msの出生エフェクトを復元。生態系ロジックと乱数を変更しない。
+- 結果とBEST: Driveの表示レイアウトを維持し、GitHubの6種類の得点内訳・能力詳細・NEW RECORD順位表示を追加。BEST上位3件、手動10件を維持。
+- 保存データ: 同名localStorageキーで旧GitHubとDriveのschemaが異なるため互換読取を追加。旧記録を破棄しない。
+- 未使用の再構築定数とSet生成を除去。元のゲームバランス・画像素材・得点式は不変。
+- 維持: Driveの遊び方／データ／開発タブ、取得済み能力の現行配置、活動バーの透過操作、スマホの操作性。
+
+検証: Chromium 390×844、1280×900で開始と選択を確認。固定seed v1r-individual-363|run:1、各提示の先頭能力を選択する12 STAGE通しはGitHub旧版、Drive旧版、統合版とも4,171点。JavaScript実行エラー0。統合版では模擬保存環境でBEST自動保存、新記録表示、詳細内訳、および旧GitHub形式の読取を確認。
+未検証: iPhone Safari＋itch iframeのlocalStorage永続性。ブラウザの制約があるため別件とする。
+実装commit: 04dcdfd971ccfcbf9c1acddff10688856d83ad54。
